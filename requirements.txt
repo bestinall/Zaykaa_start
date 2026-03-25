@@ -23,9 +23,9 @@
 #
 # Current backend environment values used by the app
 # - FLASK_ENV=development
-# - JWT_SECRET=zaykaa-secret-key-2025
+# - JWT_SECRET=replace_with_a_long_random_jwt_secret
 # - DB_USER=root
-# - DB_PASSWORD=Aditya@9386
+# - DB_PASSWORD=your_mysql_password
 # - DB_HOST=localhost
 # - DB_NAME=zaykaa_db, zaykaa_user_service, zaykaa_chef_service, zaykaa_booking_service, or zaykaa_order_service depending on the service
 #

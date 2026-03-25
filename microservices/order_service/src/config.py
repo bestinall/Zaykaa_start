@@ -33,7 +33,7 @@ class Config:
     db_name: str = os.getenv("DB_NAME", "zaykaa_order_service")
     mysql_pool_name: str = os.getenv("MYSQL_POOL_NAME", "order_service_pool")
     mysql_pool_size: int = int(os.getenv("MYSQL_POOL_SIZE", "10"))
-    jwt_secret: str = os.getenv("JWT_SECRET", "zaykaa-secret-key-2025")
+    jwt_secret: str = os.getenv("JWT_SECRET", "change-me-in-env")
     jwt_issuer: str = os.getenv("JWT_ISSUER", "zaykaa.user-service")
     default_currency: str = os.getenv("DEFAULT_CURRENCY", "INR")
     default_delivery_fee: float = float(os.getenv("DEFAULT_DELIVERY_FEE", "40"))

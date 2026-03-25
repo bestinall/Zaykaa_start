@@ -26,7 +26,7 @@ class Config:
             "http://localhost:3000,http://localhost:19006",
         )
     )
-    jwt_secret: str = os.getenv("JWT_SECRET", "zaykaa-secret-key-2025")
+    jwt_secret: str = os.getenv("JWT_SECRET", "change-me-in-env")
     jwt_issuer: str = os.getenv("JWT_ISSUER", "zaykaa.user-service")
     user_service_url: str = os.getenv("USER_SERVICE_URL", "http://127.0.0.1:5001")
     chef_service_url: str = os.getenv("CHEF_SERVICE_URL", "http://127.0.0.1:5003")

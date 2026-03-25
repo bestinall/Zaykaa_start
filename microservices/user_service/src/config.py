@@ -33,6 +33,6 @@ class Config:
     db_name: str = os.getenv("DB_NAME", "zaykaa_user_service")
     mysql_pool_name: str = os.getenv("MYSQL_POOL_NAME", "user_service_pool")
     mysql_pool_size: int = int(os.getenv("MYSQL_POOL_SIZE", "10"))
-    jwt_secret: str = os.getenv("JWT_SECRET", "zaykaa-secret-key-2025")
+    jwt_secret: str = os.getenv("JWT_SECRET", "change-me-in-env")
     jwt_issuer: str = os.getenv("JWT_ISSUER", "zaykaa.user-service")
     jwt_expiry_hours: int = int(os.getenv("JWT_EXPIRY_HOURS", "24"))

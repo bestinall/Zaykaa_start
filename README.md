@@ -380,6 +380,13 @@ The project reads environment variables from:
 - `microservices/order_service/.env`
 - `microservices/api_gateway/.env`
 
+Use the example files as templates and keep the real `.env` files local only:
+
+- `cp .env.example .env` at the repo root for Docker Compose variables if needed
+- copy each service's `.env.example` to `.env`
+- copy `zaykaa-backend/.env.example` to `zaykaa-backend/.env`
+- copy `zaykaa-frontend/.env.example` to `zaykaa-frontend/.env`
+
 ### Shared values used across the stack
 
 | Key | Meaning |
@@ -623,4 +630,3 @@ Then open:
 
 - Frontend: `http://localhost:3000`
 - Gateway health: `http://localhost:5000/api/health`
-

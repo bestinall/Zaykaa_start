@@ -5,14 +5,14 @@ services:
     image: mysql:8.4
     container_name: zaykaa-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: Aditya@9386
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-your_mysql_password}
       MYSQL_DATABASE: zaykaa_user_service
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pAditya@9386"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10

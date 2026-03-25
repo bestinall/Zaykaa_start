@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 # ================= DATABASE CONFIG =================
 db_user = os.getenv('DB_USER', 'root')
-db_password = os.getenv('DB_PASSWORD', 'Aditya@9386')
+db_password = os.getenv('DB_PASSWORD', '')
 db_host = os.getenv('DB_HOST', 'localhost')
 db_name = os.getenv('DB_NAME', 'zaykaa_db')
 
@@ -35,7 +35,7 @@ def handle_global_options():
     if request.method == 'OPTIONS':
         return jsonify({'status': 'ok'}), 200
 
-JWT_SECRET = os.getenv('JWT_SECRET', 'zaykaa-secret-key-2025')
+JWT_SECRET = os.getenv('JWT_SECRET', 'change-me-in-env')
 
 # ================= MODELS =================
 
