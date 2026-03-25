@@ -1,0 +1,237 @@
+/* Add these to existing ChefMenuManagement.css */
+
+.message {
+  padding: 14px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  animation: slideDown 0.3s ease;
+}
+
+.message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.message.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.food-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.food-header h3 {
+  margin: 0;
+  flex: 1;
+  color: #333;
+  font-size: 16px;
+}
+
+.category-badge {
+  background: #667eea;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-submit {
+  background: #667eea;
+  color: white;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #5568d3;
+}
+
+.btn-submit:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: #999;
+}
+
+.empty p {
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+.empty p:first-child {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+/* Add these to existing ChefMenuManagement.css */
+
+/* Messages stay the same */
+.message {
+  padding: 14px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  animation: slideDown 0.3s ease;
+}
+
+.message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.message.warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Layout */
+.food-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.food-header h3 {
+  margin: 0;
+  flex: 1;
+  color: #333;
+  font-size: 16px;
+}
+
+/* Category pill – warm gradient */
+.category-badge {
+  background: linear-gradient(135deg, #ffeb3b, #ff9800, #f44336);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Primary button – solid orange with gradient option */
+.btn-submit {
+  background: #ff9800; /* solid base */
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+/* If you prefer full gradient on the button, swap to this:
+.btn-submit {
+  background: linear-gradient(135deg, #ffeb3b, #ff9800, #f44336);
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.1s ease;
+}
+*/
+
+.btn-submit:hover:not(:disabled) {
+  background: #f57c00; /* darker orange hover */
+  transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Neutral / cancel button */
+.btn-cancel {
+  background: #f0f0f0;
+  color: #333333;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: #999999;
+}
+
+.empty p {
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+.empty p:first-child {
+  font-size: 32px;
+  margin-bottom: 20px;
+}

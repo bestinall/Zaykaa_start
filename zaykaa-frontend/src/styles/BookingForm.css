@@ -1,0 +1,179 @@
+/* src/styles/BookingForm.css */
+.booking-form-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* Back button */
+.back-btn {
+  background: #f0f0f0;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  color: #333333;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.back-btn:hover {
+  background: #e0e0e0;
+}
+
+/* Chef summary card */
+.chef-summary {
+  display: flex;
+  gap: 20px;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.chef-summary img {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.chef-summary h2 {
+  color: #333333;
+  margin: 0 0 5px 0;
+}
+
+.chef-summary p {
+  color: #666666;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.chef-summary .rate {
+  color: #ff9800;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Booking form */
+.booking-form {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.booking-form h3 {
+  color: #333333;
+  margin-bottom: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333333;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #ff9800;
+  box-shadow: 0 0 4px rgba(255, 152, 0, 0.4);
+}
+
+/* Time slots */
+.time-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.slot-option {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.slot-option:hover {
+  background: #fff8e1;
+  border-color: #ff9800;
+}
+
+.slot-option input[type="radio"] {
+  width: auto;
+  margin-right: 10px;
+}
+
+.slot-option span {
+  flex-grow: 1;
+}
+
+/* Price summary */
+.price-summary {
+  background: #fff8e1;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.price-summary p {
+  color: #333333;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Submit button */
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #ffeb3b, #ff9800, #f44336);
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.1s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Success message */
+.success-message {
+  background: #efe;
+  color: #3c3;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border-left: 4px solid #3c3;
+}

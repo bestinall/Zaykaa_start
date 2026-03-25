@@ -1,0 +1,76 @@
+# Zaykaa Start - Global project requirements
+#
+# This is the single root-level requirements reference for the full project.
+# The project is configured to use your system Python installation, not a venv.
+# It includes:
+# - system prerequisites
+# - environment requirements
+# - frontend package references
+# - backend Python packages that can be installed with pip
+#
+# System prerequisites
+# - Python 3.13+ (tested in this workspace with Python 3.13)
+# - Node.js 22.14.0 tested
+# - npm 10.9.2 tested
+# - MySQL 8.x running locally
+#
+# Required databases
+# - zaykaa_db for the legacy compatibility backend
+# - zaykaa_user_service for the new user microservice
+# - zaykaa_chef_service for the chef microservice
+# - zaykaa_booking_service for the booking microservice
+# - zaykaa_order_service for the order microservice
+#
+# Current backend environment values used by the app
+# - FLASK_ENV=development
+# - JWT_SECRET=zaykaa-secret-key-2025
+# - DB_USER=root
+# - DB_PASSWORD=Aditya@9386
+# - DB_HOST=localhost
+# - DB_NAME=zaykaa_db, zaykaa_user_service, zaykaa_chef_service, zaykaa_booking_service, or zaykaa_order_service depending on the service
+#
+# Current frontend environment value used by the app
+# - REACT_APP_API_URL=http://localhost:5000/api
+#
+# System-wide setup example
+# 1. Install backend packages into your local system Python:
+#    python -m pip install -r requirements.txt
+#    If `python` is not on PATH in Windows, use:
+#    py -3 -m pip install -r requirements.txt
+# 2. Install frontend packages:
+#    npm install --prefix zaykaa-frontend
+# 3. Start frontend, gateway, user service, chef service, booking service, order service, and legacy backend together from the repo root:
+#    npm start
+#
+# Frontend npm dependencies (managed by zaykaa-frontend/package.json)
+# - @testing-library/dom ^10.4.1
+# - @testing-library/jest-dom ^6.9.1
+# - @testing-library/react ^16.3.0
+# - @testing-library/user-event ^13.5.0
+# - axios ^1.13.2
+# - react ^19.2.0
+# - react-dom ^19.2.0
+# - react-router-dom ^7.9.5
+# - react-scripts 5.0.1
+# - web-vitals ^2.1.4
+#
+# Backend Python dependencies
+bcrypt==4.0.1
+blinker==1.9.0
+click==8.3.0
+colorama==0.4.6
+Flask==3.0.0
+flask-cors==4.0.0
+Flask-SQLAlchemy==3.1.1
+greenlet==3.2.4
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+mysql-connector-python==9.5.0
+PyJWT==2.10.1
+PyMySQL==1.1.0
+python-dotenv==1.0.0
+requests==2.32.5
+SQLAlchemy==2.0.44
+typing_extensions==4.15.0
+Werkzeug==3.1.3

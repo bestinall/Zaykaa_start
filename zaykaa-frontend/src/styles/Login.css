@@ -1,0 +1,133 @@
+/* src/styles/Login.css */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    #ffeb3b 0%,
+    #ff9800 40%,
+    #f44336 100%
+  );
+}
+
+.login-card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-card h1 {
+  margin-bottom: 10px;
+  color: #333333;
+}
+
+.login-card p {
+  color: #666666;
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333333;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #ff9800;
+  box-shadow: 0 0 4px rgba(255, 152, 0, 0.4);
+}
+
+/* Primary login button */
+button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #ffeb3b, #ff9800, #f44336);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.2s ease, transform 0.1s ease;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Error */
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+/* Link to register */
+.register-link {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.register-link a {
+  color: #ff9800;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* background wrapper */
+.bg-hero {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background-image: url('C:\Users\Aditya\Desktop\final_year_project\Zaykaa_Start\zaykaa-frontend\public\images\food1.jpg'); /* update path */
+  background-size: cover;
+  background-position: center;
+}
+
+/* gradient overlay + centering */
+.bg-hero-overlay {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 235, 59, 0.65),
+    rgba(255, 152, 0, 0.7),
+    rgba(244, 67, 54, 0.7)
+  );
+}

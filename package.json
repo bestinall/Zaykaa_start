@@ -1,0 +1,11 @@
+{
+  "name": "zaykaa-start-workspace",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/start-dev.js",
+    "frontend:install": "npm install --prefix zaykaa-frontend",
+    "frontend:audit": "npm audit --prefix zaykaa-frontend",
+    "frontend:audit:fix": "npm audit fix --prefix zaykaa-frontend",
+    "frontend:audit:fix:force": "npm audit fix --force --prefix zaykaa-frontend"
+  }
+}

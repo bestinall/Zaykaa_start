@@ -1,0 +1,108 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: zaykaa-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: Aditya@9386
+      MYSQL_DATABASE: zaykaa_user_service
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pAditya@9386"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  user-service:
+    build:
+      context: ./microservices/user_service
+    container_name: zaykaa-user-service
+    env_file:
+      - ./microservices/user_service/.env
+    environment:
+      DB_HOST: mysql
+      DB_NAME: zaykaa_user_service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5001:5001"
+
+  chef-service:
+    build:
+      context: ./microservices/chef_service
+    container_name: zaykaa-chef-service
+    env_file:
+      - ./microservices/chef_service/.env
+    environment:
+      DB_HOST: mysql
+      DB_NAME: zaykaa_chef_service
+      BOOKING_SERVICE_URL: http://booking-service:5004
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5003:5003"
+
+  booking-service:
+    build:
+      context: ./microservices/booking_service
+    container_name: zaykaa-booking-service
+    env_file:
+      - ./microservices/booking_service/.env
+    environment:
+      DB_HOST: mysql
+      DB_NAME: zaykaa_booking_service
+      USER_SERVICE_URL: http://user-service:5001
+      CHEF_SERVICE_URL: http://chef-service:5003
+    depends_on:
+      mysql:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      chef-service:
+        condition: service_started
+    ports:
+      - "5004:5004"
+
+  order-service:
+    build:
+      context: ./microservices/order_service
+    container_name: zaykaa-order-service
+    env_file:
+      - ./microservices/order_service/.env
+    environment:
+      DB_HOST: mysql
+      DB_NAME: zaykaa_order_service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "5005:5005"
+
+  api-gateway:
+    build:
+      context: ./microservices/api_gateway
+    container_name: zaykaa-api-gateway
+    env_file:
+      - ./microservices/api_gateway/.env
+    environment:
+      USER_SERVICE_URL: http://user-service:5001
+      CHEF_SERVICE_URL: http://chef-service:5003
+      BOOKING_SERVICE_URL: http://booking-service:5004
+      ORDER_SERVICE_URL: http://order-service:5005
+      LEGACY_BACKEND_URL:
+    depends_on:
+      - user-service
+      - chef-service
+      - booking-service
+      - order-service
+    ports:
+      - "5000:5000"
+
+volumes:
+  mysql_data:

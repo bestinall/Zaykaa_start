@@ -1,0 +1,273 @@
+/* src/styles/ChefDashboard.css */
+.chef-dashboard {
+  min-height: 100vh;
+  background: #fff8e1;
+  padding: 40px 20px;
+}
+
+/* Header */
+.chef-header {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+
+.chef-header h1 {
+  color: #333333;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.chef-header p {
+  color: #666666;
+  font-size: 16px;
+}
+
+/* Tabs */
+.chef-tabs {
+  max-width: 1200px;
+  margin: 0 auto 30px;
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid #eeeeee;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666666;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+}
+
+.tab-btn:hover {
+  color: #ff9800;
+}
+
+.tab-btn.active {
+  color: #ff9800;
+  border-bottom-color: #ff9800;
+}
+
+/* Main content wrapper */
+.chef-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 30px;
+  min-height: 400px;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #ff9800;
+  font-size: 18px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #ff9800;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading p {
+  color: #666666;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Bookings List */
+.bookings-list {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.list-header h2 {
+  color: #333333;
+  margin: 0;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: #f0f0f0;
+  border: 1px solid #dddddd;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  color: #666666;
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #ffeb3b, #ff9800, #f44336);
+  color: #ffffff;
+  border-color: #ff9800;
+}
+
+.filter-btn:hover {
+  border-color: #ff9800;
+}
+
+.success-message {
+  background: #efe;
+  color: #3c3;
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+/* Booking cards */
+.bookings-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.booking-card {
+  background: #fdf7ed;
+  border: 1px solid #ffe0b2;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.3s;
+}
+
+.booking-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.booking-header h3 {
+  margin: 0 0 5px 0;
+  color: #333333;
+}
+
+.booking-id {
+  color: #999999;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* Status chip */
+.status-badge {
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Details */
+.booking-details {
+  margin-bottom: 20px;
+  border-top: 1px solid #ffe0b2;
+  border-bottom: 1px solid #ffe0b2;
+  padding: 15px 0;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.detail-row .label {
+  font-weight: 600;
+  color: #666666;
+}
+
+.detail-row .amount {
+  color: #ff9800;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Booking actions */
+.booking-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-confirm,
+.btn-cancel,
+.btn-complete {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+/* Keep semantic colors for actions */
+.btn-confirm {
+  background: #28a745;
+  color: #ffffff;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background: #218838;
+}
+
+.btn-cancel {
+  background: #dc3545;
+  color: #ffffff;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.btn-complete {
+  background: #ff9800;
+  color: #ffffff;
+}
+
+.btn-complete:hover:not(:disabled) {
+  background: #f57c00;
+}
