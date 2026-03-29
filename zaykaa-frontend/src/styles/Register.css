@@ -1,123 +1,44 @@
-/* src/styles/Register.css */
-.register-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    #ffeb3b 0%,
-    #ff9800 40%,
-    #f44336 100%
-  );
-  padding: 20px;
+.auth-page--register {
+  background:
+    radial-gradient(circle at top right, rgba(255, 213, 130, 0.28), transparent 30%),
+    linear-gradient(135deg, #f8efe5 0%, #f4dfc1 48%, #f1c78c 100%);
 }
 
-.register-card {
-  background: #ffffff;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-  width: 100%;
-  max-width: 500px;
+.register-story {
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.08), transparent 38%),
+    radial-gradient(circle at top left, rgba(255, 227, 181, 0.28), transparent 24%),
+    linear-gradient(145deg, #7f391b 0%, #b9582a 46%, #efbc7a 100%);
 }
 
-.register-card h1 {
-  margin-bottom: 10px;
-  color: #333333;
-  font-size: 28px;
+.register-story__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 28px;
 }
 
-.register-card p {
-  color: #666666;
-  margin-bottom: 30px;
-  font-size: 14px;
+.story-role-card {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
 }
 
-.form-group {
-  margin-bottom: 20px;
+.story-role-card strong {
+  font-size: 0.98rem;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  color: #333333;
-  font-weight: 500;
-  font-size: 14px;
+.story-role-card span {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9rem;
 }
 
-.form-group input,
-.role-select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #dddddd;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-}
-
-/* Focus state with warm accent */
-.form-group input:focus,
-.role-select:focus {
-  outline: none;
-  border-color: #ff9800;
-  box-shadow: 0 0 5px rgba(255, 152, 0, 0.4);
-}
-
-.role-select {
-  cursor: pointer;
-  background: #ffffff;
-}
-
-/* Primary register button */
-button {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #ffeb3b, #ff9800, #f44336);
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: filter 0.2s ease, transform 0.1s ease;
-}
-
-button:hover:not(:disabled) {
-  filter: brightness(0.95);
-  transform: translateY(-2px);
-}
-
-button:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
-}
-
-/* Error */
-.error-message {
-  background: #fee;
-  color: #c33;
-  padding: 12px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  border-left: 4px solid #c33;
-}
-
-/* Link to login */
-.login-link {
-  text-align: center;
-  margin-top: 20px;
-  color: #666666;
-  font-size: 14px;
-}
-
-.login-link a {
-  color: #ff9800;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.login-link a:hover {
-  text-decoration: underline;
+@media (max-width: 720px) {
+  .register-story__grid {
+    grid-template-columns: 1fr;
+  }
 }

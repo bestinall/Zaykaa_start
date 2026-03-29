@@ -32,6 +32,7 @@ class Config:
     chef_service_url: str = os.getenv("CHEF_SERVICE_URL", "http://127.0.0.1:5003")
     booking_service_url: str = os.getenv("BOOKING_SERVICE_URL", "http://127.0.0.1:5004")
     order_service_url: str = os.getenv("ORDER_SERVICE_URL", "http://127.0.0.1:5005")
+    payment_service_url: str = os.getenv("PAYMENT_SERVICE_URL", "http://127.0.0.1:5006")
     legacy_backend_url: str = os.getenv("LEGACY_BACKEND_URL", "http://127.0.0.1:5002")
     rate_limit_window_seconds: int = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
     rate_limit_max_requests: int = int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "120"))

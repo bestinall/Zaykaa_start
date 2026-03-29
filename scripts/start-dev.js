@@ -8,6 +8,7 @@ const userServiceDir = path.join(rootDir, 'microservices', 'user_service');
 const chefServiceDir = path.join(rootDir, 'microservices', 'chef_service');
 const bookingServiceDir = path.join(rootDir, 'microservices', 'booking_service');
 const orderServiceDir = path.join(rootDir, 'microservices', 'order_service');
+const paymentServiceDir = path.join(rootDir, 'microservices', 'payment_service');
 const legacyBackendDir = path.join(rootDir, 'zaykaa-backend');
 const frontendDir = path.join(rootDir, 'zaykaa-frontend');
 const isWindows = process.platform === 'win32';
@@ -136,7 +137,7 @@ function startProcess(name, command, args, cwd, extraEnv = {}) {
 }
 
 function validateDirectories() {
-  const requiredDirectories = [gatewayDir, userServiceDir, chefServiceDir, bookingServiceDir, orderServiceDir, legacyBackendDir, frontendDir];
+  const requiredDirectories = [gatewayDir, userServiceDir, chefServiceDir, bookingServiceDir, orderServiceDir, paymentServiceDir, legacyBackendDir, frontendDir];
   const missingDirectory = requiredDirectories.find((directory) => !fileExists(directory));
 
   if (missingDirectory) {
@@ -164,6 +165,7 @@ function main() {
   log(`Chef Service: ${chefServiceDir}`);
   log(`Booking Service: ${bookingServiceDir}`);
   log(`Order Service: ${orderServiceDir}`);
+  log(`Payment Service: ${paymentServiceDir}`);
   log(`Legacy Backend: ${legacyBackendDir}`);
   log(`Frontend: ${frontendDir}`);
   log('Press Ctrl+C to stop all services.\n');
@@ -178,6 +180,7 @@ function main() {
   startProcess('chef-service', systemPython, pythonArgs(systemPython), chefServiceDir, pythonEnv);
   startProcess('booking-service', systemPython, pythonArgs(systemPython), bookingServiceDir, pythonEnv);
   startProcess('order-service', systemPython, pythonArgs(systemPython), orderServiceDir, pythonEnv);
+  startProcess('payment-service', systemPython, pythonArgs(systemPython), paymentServiceDir, pythonEnv);
   startProcess(
     'legacy-backend',
     systemPython,

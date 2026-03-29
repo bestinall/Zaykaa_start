@@ -20,6 +20,7 @@
 # - zaykaa_chef_service for the chef microservice
 # - zaykaa_booking_service for the booking microservice
 # - zaykaa_order_service for the order microservice
+# - zaykaa_payment_service for the payment microservice
 #
 # Current backend environment values used by the app
 # - FLASK_ENV=development
@@ -27,7 +28,7 @@
 # - DB_USER=root
 # - DB_PASSWORD=your_mysql_password
 # - DB_HOST=localhost
-# - DB_NAME=zaykaa_db, zaykaa_user_service, zaykaa_chef_service, zaykaa_booking_service, or zaykaa_order_service depending on the service
+# - DB_NAME=zaykaa_db, zaykaa_user_service, zaykaa_chef_service, zaykaa_booking_service, zaykaa_order_service, or zaykaa_payment_service depending on the service
 #
 # Current frontend environment value used by the app
 # - REACT_APP_API_URL=http://localhost:5000/api
@@ -39,7 +40,7 @@
 #    py -3 -m pip install -r requirements.txt
 # 2. Install frontend packages:
 #    npm install --prefix zaykaa-frontend
-# 3. Start frontend, gateway, user service, chef service, booking service, order service, and legacy backend together from the repo root:
+# 3. Start frontend, gateway, user service, chef service, booking service, order service, payment service, and legacy backend together from the repo root:
 #    npm start
 #
 # Frontend npm dependencies (managed by zaykaa-frontend/package.json)

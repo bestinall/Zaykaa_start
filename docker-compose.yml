@@ -84,6 +84,24 @@ services:
     ports:
       - "5005:5005"
 
+  payment-service:
+    build:
+      context: ./microservices/payment_service
+    container_name: zaykaa-payment-service
+    env_file:
+      - ./microservices/payment_service/.env
+    environment:
+      DB_HOST: mysql
+      DB_NAME: zaykaa_payment_service
+      ORDER_SERVICE_URL: http://order-service:5005
+    depends_on:
+      mysql:
+        condition: service_healthy
+      order-service:
+        condition: service_started
+    ports:
+      - "5006:5006"
+
   api-gateway:
     build:
       context: ./microservices/api_gateway
@@ -95,12 +113,14 @@ services:
       CHEF_SERVICE_URL: http://chef-service:5003
       BOOKING_SERVICE_URL: http://booking-service:5004
       ORDER_SERVICE_URL: http://order-service:5005
+      PAYMENT_SERVICE_URL: http://payment-service:5006
       LEGACY_BACKEND_URL:
     depends_on:
       - user-service
       - chef-service
       - booking-service
       - order-service
+      - payment-service
     ports:
       - "5000:5000"
 

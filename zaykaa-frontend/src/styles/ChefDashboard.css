@@ -1,122 +1,88 @@
-/* src/styles/ChefDashboard.css */
 .chef-dashboard {
-  min-height: 100vh;
-  background: #fff8e1;
-  padding: 40px 20px;
+  display: grid;
+  gap: 24px;
 }
 
-/* Header */
-.chef-header {
-  max-width: 1200px;
-  margin: 0 auto 40px;
-  text-align: center;
+.chef-dashboard__hero {
+  padding: 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(240px, 0.75fr);
+  gap: 24px;
+  align-items: end;
 }
 
-.chef-header h1 {
-  color: #333333;
-  font-size: 32px;
-  margin-bottom: 10px;
+.chef-dashboard__hero-facts {
+  display: grid;
+  gap: 12px;
 }
 
-.chef-header p {
-  color: #666666;
-  font-size: 16px;
+.chef-dashboard__hero-facts div {
+  display: grid;
+  gap: 6px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(131, 89, 54, 0.12);
 }
 
-/* Tabs */
+.chef-dashboard__hero-facts span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.chef-dashboard__hero-facts strong {
+  font-size: 1.2rem;
+}
+
 .chef-tabs {
-  max-width: 1200px;
-  margin: 0 auto 30px;
   display: flex;
   gap: 10px;
-  border-bottom: 2px solid #eeeeee;
   flex-wrap: wrap;
 }
 
 .tab-btn {
-  padding: 12px 20px;
-  border: none;
-  background: none;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(131, 89, 54, 0.12);
+  color: var(--muted);
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  color: #666666;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s;
+  font-weight: 800;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
 }
 
-.tab-btn:hover {
-  color: #ff9800;
-}
-
+.tab-btn:hover,
 .tab-btn.active {
-  color: #ff9800;
-  border-bottom-color: #ff9800;
+  transform: translateY(-1px);
+  color: #fff;
+  background: linear-gradient(135deg, var(--brand) 0%, #df8a43 100%);
+  border-color: transparent;
 }
 
-/* Main content wrapper */
 .chef-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 30px;
-  min-height: 400px;
+  padding: 28px;
 }
 
-/* Loading */
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-  color: #ff9800;
-  font-size: 18px;
-}
-
-.spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #ff9800;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 15px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading p {
-  color: #666666;
-  font-size: 16px;
-  margin: 0;
-}
-
-/* Bookings List */
-.bookings-list {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+.bookings-list,
+.recipes-list,
+.analytics-section {
+  display: grid;
+  gap: 20px;
 }
 
 .list-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  align-items: flex-end;
+  gap: 16px;
   flex-wrap: wrap;
-  gap: 20px;
-}
-
-.list-header h2 {
-  color: #333333;
-  margin: 0;
 }
 
 .filter-buttons {
@@ -126,107 +92,87 @@
 }
 
 .filter-btn {
-  background: #f0f0f0;
-  border: 1px solid #dddddd;
-  padding: 8px 16px;
-  border-radius: 20px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(131, 89, 54, 0.14);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
-  color: #666666;
+  font-weight: 700;
 }
 
 .filter-btn.active {
-  background: linear-gradient(135deg, #ffeb3b, #ff9800, #f44336);
-  color: #ffffff;
-  border-color: #ff9800;
+  background: rgba(199, 93, 42, 0.12);
+  color: var(--brand-dark);
 }
 
-.filter-btn:hover {
-  border-color: #ff9800;
-}
-
-.success-message {
-  background: #efe;
-  color: #3c3;
-  padding: 12px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-}
-
-/* Booking cards */
-.bookings-cards {
+.bookings-cards,
+.recipes-grid,
+.analytics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
 }
 
-.booking-card {
-  background: #fdf7ed;
-  border: 1px solid #ffe0b2;
-  border-radius: 10px;
-  padding: 20px;
-  transition: all 0.3s;
+.booking-card,
+.recipe-card,
+.analytics-card {
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(131, 89, 54, 0.12);
+  background: rgba(255, 255, 255, 0.56);
 }
 
-.booking-card:hover {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.booking-header {
+.booking-header,
+.recipe-header {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   align-items: flex-start;
-  margin-bottom: 15px;
-}
-
-.booking-header h3 {
-  margin: 0 0 5px 0;
-  color: #333333;
 }
 
 .booking-id {
-  color: #999999;
-  font-size: 12px;
-  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
 }
 
-/* Status chip */
 .status-badge {
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
-/* Details */
 .booking-details {
-  margin-bottom: 20px;
-  border-top: 1px solid #ffe0b2;
-  border-bottom: 1px solid #ffe0b2;
-  padding: 15px 0;
+  display: grid;
+  gap: 10px;
+  padding: 18px 0;
+  margin: 18px 0;
+  border-top: 1px solid rgba(131, 89, 54, 0.1);
+  border-bottom: 1px solid rgba(131, 89, 54, 0.1);
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 14px;
+  gap: 16px;
 }
 
 .detail-row .label {
-  font-weight: 600;
-  color: #666666;
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .detail-row .amount {
-  color: #ff9800;
-  font-weight: 600;
-  font-size: 16px;
+  color: var(--brand-dark);
+  font-weight: 800;
 }
 
-/* Booking actions */
 .booking-actions {
   display: flex;
   gap: 10px;
@@ -236,38 +182,151 @@
 .btn-cancel,
 .btn-complete {
   flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
+  min-height: 44px;
+  border-radius: 14px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s;
+  font-weight: 800;
 }
 
-/* Keep semantic colors for actions */
 .btn-confirm {
-  background: #28a745;
-  color: #ffffff;
-}
-
-.btn-confirm:hover:not(:disabled) {
-  background: #218838;
+  background: rgba(47, 124, 81, 0.14);
+  color: var(--success);
 }
 
 .btn-cancel {
-  background: #dc3545;
-  color: #ffffff;
-}
-
-.btn-cancel:hover:not(:disabled) {
-  background: #c82333;
+  background: rgba(179, 71, 45, 0.12);
+  color: var(--error);
 }
 
 .btn-complete {
-  background: #ff9800;
-  color: #ffffff;
+  background: rgba(49, 95, 170, 0.12);
+  color: #315faa;
 }
 
-.btn-complete:hover:not(:disabled) {
-  background: #f57c00;
+.add-recipe-form {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(131, 89, 54, 0.12);
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.recipe-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.recipe-form__row input,
+.recipe-form__row select {
+  min-height: 50px;
+  padding: 14px 16px;
+  border: 1px solid rgba(131, 89, 54, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--text);
+  outline: none;
+}
+
+.recipe-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.category-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(143, 65, 31, 0.08);
+  color: var(--brand-dark);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.recipe-info {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--muted);
+}
+
+.analytics-card {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.analytics-card--highlight {
+  background: linear-gradient(135deg, var(--brand) 0%, #df8a43 100%);
+  color: #fff;
+  border-color: transparent;
+}
+
+.card-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: rgba(199, 93, 42, 0.12);
+  color: var(--brand-dark);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.analytics-card--highlight .card-icon {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.card-content p {
+  color: inherit;
+  opacity: 0.82;
+}
+
+.earnings-summary {
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(131, 89, 54, 0.12);
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.summary-details {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+@media (max-width: 920px) {
+  .chef-dashboard__hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .chef-content,
+  .chef-dashboard__hero {
+    padding: 22px;
+  }
+
+  .recipe-form__row,
+  .detail-row {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-row {
+    justify-content: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .booking-actions {
+    flex-direction: column;
+  }
 }

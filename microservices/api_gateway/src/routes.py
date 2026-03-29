@@ -87,6 +87,7 @@ def aggregated_health():
         "chef_service": "unknown",
         "booking_service": "unknown",
         "order_service": "unknown",
+        "payment_service": "unknown",
         "legacy_backend": "unknown",
     }
     for service_name, base_url, health_key in [
@@ -94,6 +95,7 @@ def aggregated_health():
         ("chef_service", config.chef_service_url, "chef_service"),
         ("booking_service", config.booking_service_url, "booking_service"),
         ("order_service", config.order_service_url, "order_service"),
+        ("payment_service", config.payment_service_url, "payment_service"),
     ]:
         try:
             response = requests.get(f"{base_url}/health", timeout=2)
@@ -201,6 +203,28 @@ def order_service_proxy(path):
     normalized_path = "/api/v1/orders" + (f"/{path}" if path else "")
     return _proxy_service(
         config.order_service_url,
+        normalized_path,
+        require_auth=True,
+    )
+
+
+@gateway_blueprint.route("/api/v1/payments/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+@gateway_blueprint.route("/api/v1/payments", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+def payment_service_proxy(path):
+    normalized_path = "/api/v1/payments" + (f"/{path}" if path else "")
+    return _proxy_service(
+        config.payment_service_url,
+        normalized_path,
+        require_auth=True,
+    )
+
+
+@gateway_blueprint.route("/api/v1/payouts/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+@gateway_blueprint.route("/api/v1/payouts", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+def payout_service_proxy(path):
+    normalized_path = "/api/v1/payouts" + (f"/{path}" if path else "")
+    return _proxy_service(
+        config.payment_service_url,
         normalized_path,
         require_auth=True,
     )
@@ -377,6 +401,84 @@ def order_status_alias(order_id):
     return _proxy_service(
         config.order_service_url,
         f"/api/v1/orders/{order_id}/status",
+        require_auth=True,
+    )
+
+
+@gateway_blueprint.route("/api/payments", methods=["GET", "POST"])
+def payments_alias():
+    return _proxy_service(config.payment_service_url, "/api/v1/payments", require_auth=True)
+
+
+@gateway_blueprint.route("/api/payments/my", methods=["GET"])
+def my_payments_alias():
+    return _proxy_service(config.payment_service_url, "/api/v1/payments/my", require_auth=True)
+
+
+@gateway_blueprint.route("/api/payments/order/<int:order_id>", methods=["GET"])
+def order_payments_alias(order_id):
+    return _proxy_service(
+        config.payment_service_url,
+        f"/api/v1/payments/order/{order_id}",
+        require_auth=True,
+    )
+
+
+@gateway_blueprint.route("/api/payments/<int:payment_id>", methods=["GET"])
+def payment_detail_alias(payment_id):
+    return _proxy_service(
+        config.payment_service_url,
+        f"/api/v1/payments/{payment_id}",
+        require_auth=True,
+    )
+
+
+@gateway_blueprint.route("/api/payments/<int:payment_id>/verify", methods=["POST"])
+def payment_verify_alias(payment_id):
+    return _proxy_service(
+        config.payment_service_url,
+        f"/api/v1/payments/{payment_id}/verify",
+        require_auth=True,
+    )
+
+
+@gateway_blueprint.route("/api/payments/<int:payment_id>/refund", methods=["POST"])
+def payment_refund_alias(payment_id):
+    return _proxy_service(
+        config.payment_service_url,
+        f"/api/v1/payments/{payment_id}/refund",
+        require_auth=True,
+    )
+
+
+@gateway_blueprint.route("/api/payments/<int:payment_id>/refunds", methods=["GET"])
+def payment_refunds_alias(payment_id):
+    return _proxy_service(
+        config.payment_service_url,
+        f"/api/v1/payments/{payment_id}/refunds",
+        require_auth=True,
+    )
+
+
+@gateway_blueprint.route("/api/payments/<int:payment_id>/events", methods=["GET"])
+def payment_events_alias(payment_id):
+    return _proxy_service(
+        config.payment_service_url,
+        f"/api/v1/payments/{payment_id}/events",
+        require_auth=True,
+    )
+
+
+@gateway_blueprint.route("/api/payouts", methods=["GET", "POST"])
+def payouts_alias():
+    return _proxy_service(config.payment_service_url, "/api/v1/payouts", require_auth=True)
+
+
+@gateway_blueprint.route("/api/payouts/<int:payout_id>", methods=["GET"])
+def payout_detail_alias(payout_id):
+    return _proxy_service(
+        config.payment_service_url,
+        f"/api/v1/payouts/{payout_id}",
         require_auth=True,
     )
 

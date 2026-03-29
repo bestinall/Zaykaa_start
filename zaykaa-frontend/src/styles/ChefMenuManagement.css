@@ -1,237 +1,192 @@
-/* Add these to existing ChefMenuManagement.css */
+.menu-management {
+  display: grid;
+  gap: 24px;
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 
 .message {
   padding: 14px 16px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  font-weight: 600;
-  animation: slideDown 0.3s ease;
+  border-radius: 18px;
+  font-weight: 700;
 }
 
 .message.success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: var(--success-bg);
+  border: 1px solid rgba(47, 124, 81, 0.2);
+  color: var(--success);
 }
 
 .message.error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: var(--error-bg);
+  border: 1px solid rgba(179, 71, 45, 0.2);
+  color: var(--error);
 }
 
-.message.warning {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
+.food-form {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(131, 89, 54, 0.12);
+  background: rgba(255, 255, 255, 0.56);
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.menu-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.menu-form-group {
+  display: grid;
+  gap: 8px;
+}
+
+.menu-form-group label {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.menu-form-group input,
+.menu-form-group select,
+.menu-form-group textarea {
+  min-height: 52px;
+  padding: 14px 16px;
+  border: 1px solid rgba(131, 89, 54, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--text);
+  outline: none;
+}
+
+.menu-form-group textarea {
+  min-height: 136px;
+  resize: vertical;
+}
+
+.menu-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.foods-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.food-card {
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(131, 89, 54, 0.12);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-soft);
+}
+
+.food-image {
+  aspect-ratio: 5 / 4;
+  background: linear-gradient(135deg, rgba(199, 93, 42, 0.18), rgba(245, 198, 146, 0.64));
+}
+
+.food-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.food-info {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px 0;
 }
 
 .food-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.food-header h3 {
-  margin: 0;
-  flex: 1;
-  color: #333;
-  font-size: 16px;
+  gap: 12px;
 }
 
 .category-badge {
-  background: #667eea;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(143, 65, 31, 0.08);
+  color: var(--brand-dark);
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
-.btn-submit {
-  background: #667eea;
-  color: white;
+.food-info .description,
+.food-footer {
+  color: var(--muted);
 }
 
-.btn-submit:hover:not(:disabled) {
-  background: #5568d3;
-}
-
-.btn-submit:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.btn-cancel {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.btn-cancel:hover {
-  background: #e0e0e0;
-}
-
-.empty {
-  text-align: center;
-  padding: 80px 20px;
-  color: #999;
-}
-
-.empty p {
-  margin: 10px 0;
-  font-size: 16px;
-}
-
-.empty p:first-child {
-  font-size: 32px;
-  margin-bottom: 20px;
-}
-
-/* Add these to existing ChefMenuManagement.css */
-
-/* Messages stay the same */
-.message {
-  padding: 14px 16px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  font-weight: 600;
-  animation: slideDown 0.3s ease;
-}
-
-.message.success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.message.error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.message.warning {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Layout */
-.food-header {
+.food-footer {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  gap: 12px;
+  align-items: center;
+}
+
+.price {
+  color: var(--brand-dark);
+  font-weight: 800;
+}
+
+.food-actions {
+  display: flex;
   gap: 10px;
-  margin-bottom: 10px;
+  padding: 20px;
 }
 
-.food-header h3 {
-  margin: 0;
+.btn-edit,
+.btn-delete {
   flex: 1;
-  color: #333;
-  font-size: 16px;
-}
-
-/* Category pill – warm gradient */
-.category-badge {
-  background: linear-gradient(135deg, #ffeb3b, #ff9800, #f44336);
-  color: #ffffff;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* Primary button – solid orange with gradient option */
-.btn-submit {
-  background: #ff9800; /* solid base */
-  color: #ffffff;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-weight: 600;
+  min-height: 44px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+  font-weight: 800;
 }
 
-/* If you prefer full gradient on the button, swap to this:
-.btn-submit {
-  background: linear-gradient(135deg, #ffeb3b, #ff9800, #f44336);
-  color: #ffffff;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: filter 0.2s ease, transform 0.1s ease;
-}
-*/
-
-.btn-submit:hover:not(:disabled) {
-  background: #f57c00; /* darker orange hover */
-  transform: translateY(-1px);
+.btn-delete {
+  background: rgba(179, 71, 45, 0.12);
+  color: var(--error);
 }
 
-.btn-submit:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
-}
-
-/* Neutral / cancel button */
-.btn-cancel {
-  background: #f0f0f0;
-  color: #333333;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background: #e0e0e0;
-}
-
-/* Empty state */
 .empty {
+  padding: 40px 24px;
+  border-radius: 24px;
+  border: 1px dashed rgba(131, 89, 54, 0.22);
+  background: rgba(255, 255, 255, 0.44);
   text-align: center;
-  padding: 80px 20px;
-  color: #999999;
+}
+
+.empty h3 {
+  margin-bottom: 8px;
 }
 
 .empty p {
-  margin: 10px 0;
-  font-size: 16px;
+  color: var(--muted);
 }
 
-.empty p:first-child {
-  font-size: 32px;
-  margin-bottom: 20px;
+@media (max-width: 760px) {
+  .menu-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .food-actions {
+    flex-direction: column;
+  }
 }

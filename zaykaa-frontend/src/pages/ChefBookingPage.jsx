@@ -1,52 +1,43 @@
-// src/pages/ChefBookingPage.jsx
 import React, { useState } from 'react';
 import Header from '../components/Common/Header';
 import ChefSearch from '../components/ChefBooking/ChefSearch';
 import BookingForm from '../components/ChefBooking/BookingForm';
+import Modal from '../components/ui/Modal';
+import PageTransition from '../components/ui/PageTransition';
+import { useToast } from '../context/ToastContext';
 
 const ChefBookingPage = () => {
   const [selectedChef, setSelectedChef] = useState(null);
-  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const toast = useToast();
 
-  const handleChefSelect = (chef) => {
-    setSelectedChef(chef);
-  };
-
-  const handleBookingSuccess = (booking) => {
-    setBookingSuccess(true);
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setSelectedChef(null);
-      setBookingSuccess(false);
-    }, 3000);
+  const handleBookingSuccess = () => {
+    toast.success('Chef booked', 'Your request has been placed and the chef has been notified.');
+    setSelectedChef(null);
   };
 
   return (
-    <>
+    <PageTransition className="app-shell">
       <Header />
-      <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
-        {selectedChef && !bookingSuccess ? (
+      <div className="content-shell">
+        <ChefSearch onSelectChef={setSelectedChef} />
+      </div>
+
+      <Modal
+        isOpen={Boolean(selectedChef)}
+        onClose={() => setSelectedChef(null)}
+        title={selectedChef ? `Book ${selectedChef.name}` : ''}
+        description="Choose your dining date, guest count, and hosting preferences."
+        size="xl"
+      >
+        {selectedChef && (
           <BookingForm
             chef={selectedChef}
             onBookingSuccess={handleBookingSuccess}
-            onBack={() => setSelectedChef(null)}
+            onCancel={() => setSelectedChef(null)}
           />
-        ) : bookingSuccess ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '60px 20px',
-            background: '#efe',
-            margin: '40px 20px',
-            borderRadius: '10px',
-          }}>
-            <h2 style={{ color: '#3c3' }}>✓ Booking Confirmed!</h2>
-            <p>Your chef booking has been confirmed. Check your email for details.</p>
-          </div>
-        ) : (
-          <ChefSearch onSelectChef={handleChefSelect} />
         )}
-      </div>
-    </>
+      </Modal>
+    </PageTransition>
   );
 };
 
