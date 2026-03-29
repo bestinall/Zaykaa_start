@@ -153,6 +153,8 @@ def validate_chef_profile_payload(payload, partial=False):
         )
 
     string_mappings = {
+        "native_state": payload.get("native_state") or payload.get("nativeState"),
+        "native_region": payload.get("native_region") or payload.get("nativeRegion"),
         "service_city": payload.get("service_city") or payload.get("city"),
         "service_state": payload.get("service_state") or payload.get("state"),
         "service_country": payload.get("service_country") or payload.get("country"),
@@ -275,7 +277,7 @@ def validate_availability_payload(payload):
 def validate_recipe_payload(payload, partial=False):
     recipe_data = {}
 
-    name = _clean_string(payload.get("name"))
+    name = _clean_string(payload.get("name") or payload.get("title"))
     if name:
         recipe_data["name"] = name
 
@@ -303,15 +305,33 @@ def validate_recipe_payload(payload, partial=False):
             )
         recipe_data["difficulty_level"] = difficulty_level
 
+    cooking_time_value = (
+        payload.get("cookingTime")
+        or payload.get("cooking_time_label")
+        or payload.get("cookingTimeLabel")
+    )
+    cooking_time_minutes = (
+        payload.get("cooking_time_minutes")
+        or payload.get("cookingTimeMinutes")
+        or payload.get("cookTimeMinutes")
+    )
+
     preparation_minutes, preparation_label = _duration_minutes_and_label(
-        payload.get("preparationTime") or payload.get("preparation_time_label"),
+        payload.get("preparationTime")
+        or payload.get("preparation_time_label")
+        or cooking_time_value,
         payload.get("preparation_time_minutes"),
     )
+    if preparation_minutes is None and cooking_time_minutes not in (None, ""):
+        preparation_minutes, preparation_label = _duration_minutes_and_label(
+            cooking_time_value or cooking_time_minutes,
+            cooking_time_minutes,
+        )
     if preparation_minutes is not None:
         recipe_data["preparation_time_minutes"] = preparation_minutes
         recipe_data["preparation_time_label"] = preparation_label
 
-    cook_time_minutes = payload.get("cook_time_minutes", payload.get("cookTimeMinutes"))
+    cook_time_minutes = payload.get("cook_time_minutes", cooking_time_minutes)
     if cook_time_minutes not in (None, ""):
         recipe_data["cook_time_minutes"] = parse_int(
             cook_time_minutes,
@@ -326,6 +346,10 @@ def validate_recipe_payload(payload, partial=False):
     calories = payload.get("calories")
     if calories not in (None, ""):
         recipe_data["calories"] = parse_int(calories, "calories", minimum=0)
+
+    price = payload.get("price")
+    if price not in (None, ""):
+        recipe_data["price"] = parse_float(price, "price", minimum=0)
 
     image_url = _clean_string(payload.get("image_url") or payload.get("image"))
     if image_url is not None:
@@ -403,11 +427,18 @@ def validate_recipe_payload(payload, partial=False):
             )
 
     if not partial:
-        require_fields(recipe_data, ["name", "category", "preparation_time_minutes"])
+        require_fields(recipe_data, ["name", "category", "description", "preparation_time_minutes"])
         recipe_data.setdefault("difficulty_level", "medium")
         recipe_data.setdefault("servings", 2)
-        recipe_data.setdefault("cook_time_minutes", 0)
+        recipe_data.setdefault(
+            "cook_time_minutes",
+            recipe_data.get("preparation_time_minutes", 0),
+        )
         recipe_data.setdefault("is_public", True)
+        if not ingredients:
+            raise ValidationError("At least one ingredient is required")
+        if not steps:
+            raise ValidationError("At least one cooking step is required")
 
     if partial and not recipe_data and ingredients is None and steps is None:
         raise ValidationError("At least one recipe field must be provided")
@@ -480,6 +511,8 @@ def validate_recipe_filters(args):
         "offset": parse_int(args.get("offset", 0), "offset", minimum=0),
         "category": _clean_string(args.get("category")),
         "cuisine": _clean_string(args.get("cuisine")),
+        "state": _clean_string(args.get("state") or args.get("origin_state")),
+        "region": _clean_string(args.get("region") or args.get("origin_region")),
         "q": _clean_string(args.get("q")),
     }
 

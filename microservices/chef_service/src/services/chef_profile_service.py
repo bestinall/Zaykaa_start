@@ -272,6 +272,8 @@ class ChefProfileService:
             "hourlyRate": float(profile.get("hourly_rate") or 0),
             "hourly_rate": float(profile.get("hourly_rate") or 0),
             "experienceYears": int(profile.get("experience_years") or 0),
+            "nativeState": profile.get("native_state"),
+            "nativeRegion": profile.get("native_region"),
             "location": location,
             "city": profile.get("service_city"),
             "state": profile.get("service_state"),

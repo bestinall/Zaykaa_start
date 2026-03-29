@@ -11,10 +11,11 @@ import Dashboard from './pages/Dashboard';
 import ChefBookingPage from './pages/ChefBookingPage';
 import OrderPage from './pages/OrderPage';
 import ChefDashboard from './pages/ChefDashboard';
+import RecipeBook from './pages/RecipeBook';
 import Card from './components/ui/Card';
 import Skeleton from './components/ui/Skeleton';
 
-const ProtectedRoute = ({ children, requiredRole }) => {
+const ProtectedRoute = ({ children, requiredRole, requiredRoles }) => {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
@@ -37,7 +38,9 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" />;
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
+  const allowedRoles = requiredRoles || (requiredRole ? [requiredRole] : null);
+
+  if (allowedRoles && !allowedRoles.includes(user?.role)) {
     return <Navigate to="/dashboard" />;
   }
 
@@ -58,6 +61,15 @@ const AnimatedRoutes = () => {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/recipes"
+          element={
+            <ProtectedRoute>
+              <RecipeBook />
             </ProtectedRoute>
           }
         />

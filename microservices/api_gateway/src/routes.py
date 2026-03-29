@@ -46,6 +46,8 @@ def _validate_jwt():
 
 
 def _proxy_service(base_url, path, require_auth):
+    if request.method == "OPTIONS":
+        return proxy_service.proxy(base_url, path)
     if require_auth:
         auth_error = _validate_jwt()
         if auth_error:

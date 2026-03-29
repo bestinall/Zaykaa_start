@@ -5,7 +5,7 @@ from src.utils.exceptions import ValidationError
 
 
 EMAIL_REGEX = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
-VALID_ROLES = {"user", "chef", "agent", "vlogger", "admin"}
+VALID_ROLES = {"user", "chef", "seller", "agent", "vlogger", "admin"}
 VALID_GENDERS = {"male", "female", "other", "prefer_not_to_say"}
 VALID_ACTIVITY_LEVELS = {"low", "moderate", "high"}
 VALID_SPICE_LEVELS = {"mild", "medium", "hot"}
@@ -58,15 +58,25 @@ def validate_profile_payload(payload):
     allowed_fields = {
         "full_name",
         "phone",
+        "native_state",
+        "native_region",
         "date_of_birth",
         "gender",
         "height_cm",
         "weight_kg",
         "activity_level",
     }
-    filtered = {key: value for key, value in payload.items() if key in allowed_fields}
+    alias_payload = dict(payload)
+    if "nativeState" in payload:
+        alias_payload["native_state"] = payload.get("nativeState")
+    if "nativeRegion" in payload:
+        alias_payload["native_region"] = payload.get("nativeRegion")
+    filtered = {key: value for key, value in alias_payload.items() if key in allowed_fields}
     if not filtered:
         raise ValidationError("At least one profile field must be provided")
+    for field_name in ["full_name", "phone", "native_state", "native_region"]:
+        if field_name in filtered:
+            filtered[field_name] = str(filtered[field_name]).strip() or None
     if "date_of_birth" in filtered:
         filtered["date_of_birth"] = parse_date(filtered["date_of_birth"], "date_of_birth")
     if "gender" in filtered and filtered["gender"] not in VALID_GENDERS:
@@ -133,12 +143,22 @@ def validate_registration_payload(payload):
     validate_password(payload["password"])
     role = payload.get("role", "user")
     validate_role(role)
+    native_state = str(
+        payload.get("native_state", payload.get("nativeState", ""))
+    ).strip() or None
+    native_region = str(
+        payload.get("native_region", payload.get("nativeRegion", ""))
+    ).strip() or None
+    if role in {"chef", "seller"} and not native_state:
+        raise ValidationError("native_state is required for chef and seller accounts")
     return {
         "full_name": payload["full_name"].strip(),
         "email": payload["email"].strip().lower(),
         "password": payload["password"],
         "phone": payload.get("phone"),
         "role": role,
+        "native_state": native_state,
+        "native_region": native_region,
     }
 
 

@@ -24,6 +24,7 @@ const Header = () => {
 
   const navItems = [
     { to: '/dashboard', label: 'Dashboard' },
+    { to: '/recipes', label: 'Recipe Book' },
     { to: '/book-chef', label: 'Book Chef' },
     {
       to: '/order',

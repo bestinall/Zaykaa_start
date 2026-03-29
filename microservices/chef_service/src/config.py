@@ -35,5 +35,6 @@ class Config:
     mysql_pool_size: int = int(os.getenv("MYSQL_POOL_SIZE", "10"))
     jwt_secret: str = os.getenv("JWT_SECRET", "change-me-in-env")
     jwt_issuer: str = os.getenv("JWT_ISSUER", "zaykaa.user-service")
+    user_service_url: str = os.getenv("USER_SERVICE_URL", "http://127.0.0.1:5001")
     booking_service_url: str = os.getenv("BOOKING_SERVICE_URL", "http://127.0.0.1:5004")
     upstream_timeout_seconds: int = int(os.getenv("UPSTREAM_TIMEOUT_SECONDS", "10"))

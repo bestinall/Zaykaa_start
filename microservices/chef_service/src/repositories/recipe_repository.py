@@ -2,6 +2,10 @@ class RecipeRepository:
     RECIPE_COLUMNS = """
         r.id,
         r.chef_id,
+        r.contributor_user_id,
+        r.contributor_role,
+        r.contributor_name,
+        r.contributor_image_url,
         r.name,
         r.slug,
         r.category,
@@ -13,6 +17,10 @@ class RecipeRepository:
         r.cook_time_minutes,
         r.servings,
         r.calories,
+        r.price,
+        r.origin_state,
+        r.origin_region,
+        r.is_authentic_regional,
         r.image_url,
         r.is_public,
         r.views_count,
@@ -28,6 +36,10 @@ class RecipeRepository:
             """
             INSERT INTO recipes (
                 chef_id,
+                contributor_user_id,
+                contributor_role,
+                contributor_name,
+                contributor_image_url,
                 name,
                 slug,
                 category,
@@ -39,12 +51,20 @@ class RecipeRepository:
                 cook_time_minutes,
                 servings,
                 calories,
+                price,
+                origin_state,
+                origin_region,
+                is_authentic_regional,
                 image_url,
                 is_public
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
-                payload["chef_id"],
+                payload.get("chef_id"),
+                payload["contributor_user_id"],
+                payload["contributor_role"],
+                payload["contributor_name"],
+                payload.get("contributor_image_url"),
                 payload["name"],
                 payload["slug"],
                 payload["category"],
@@ -56,14 +76,22 @@ class RecipeRepository:
                 payload.get("cook_time_minutes", 0),
                 payload.get("servings", 1),
                 payload.get("calories"),
+                payload.get("price"),
+                payload.get("origin_state"),
+                payload.get("origin_region"),
+                1 if payload.get("is_authentic_regional", True) else 0,
                 payload.get("image_url"),
                 1 if payload.get("is_public", True) else 0,
             ),
         )
         return cursor.lastrowid
 
-    def update_recipe(self, connection, recipe_id, chef_id, payload):
+    def update_recipe(self, connection, recipe_id, contributor_user_id, payload):
         mapping = {
+            "chef_id": "chef_id",
+            "contributor_role": "contributor_role",
+            "contributor_name": "contributor_name",
+            "contributor_image_url": "contributor_image_url",
             "name": "name",
             "slug": "slug",
             "category": "category",
@@ -75,6 +103,10 @@ class RecipeRepository:
             "cook_time_minutes": "cook_time_minutes",
             "servings": "servings",
             "calories": "calories",
+            "price": "price",
+            "origin_state": "origin_state",
+            "origin_region": "origin_region",
+            "is_authentic_regional": "is_authentic_regional",
             "image_url": "image_url",
             "is_public": "is_public",
         }
@@ -84,60 +116,91 @@ class RecipeRepository:
             if key in payload:
                 assignments.append(f"{column} = %s")
                 value = payload[key]
-                if key == "is_public":
+                if key in {"is_public", "is_authentic_regional"}:
                     value = 1 if value else 0
                 values.append(value)
         if not assignments:
             return 0
-        values.extend([recipe_id, chef_id])
+        values.extend([recipe_id, contributor_user_id])
         cursor = connection.cursor()
         cursor.execute(
             f"""
             UPDATE recipes
             SET {", ".join(assignments)}, updated_at = CURRENT_TIMESTAMP
-            WHERE id = %s AND chef_id = %s
+            WHERE id = %s AND contributor_user_id = %s
             """,
             tuple(values),
         )
         return cursor.rowcount
 
-    def delete_recipe(self, connection, recipe_id, chef_id):
+    def delete_recipe(self, connection, recipe_id, contributor_user_id):
         cursor = connection.cursor()
         cursor.execute(
             """
             DELETE FROM recipes
-            WHERE id = %s AND chef_id = %s
+            WHERE id = %s AND contributor_user_id = %s
             """,
-            (recipe_id, chef_id),
+            (recipe_id, contributor_user_id),
         )
         return cursor.rowcount
 
-    def get_recipe_by_id(self, connection, recipe_id, chef_id=None, public_only=False):
+    def get_recipe_by_id(
+        self,
+        connection,
+        recipe_id,
+        contributor_user_id=None,
+        chef_id=None,
+        public_only=False,
+    ):
         query = f"""
             SELECT
                 {self.RECIPE_COLUMNS}
             FROM recipes r
-            INNER JOIN chef_profiles cp ON cp.id = r.chef_id
+            LEFT JOIN chef_profiles cp ON cp.id = r.chef_id
             WHERE r.id = %s
         """
         params = [recipe_id]
+        if contributor_user_id is not None:
+            query += " AND r.contributor_user_id = %s"
+            params.append(contributor_user_id)
         if chef_id is not None:
             query += " AND r.chef_id = %s"
             params.append(chef_id)
         if public_only:
-            query += " AND r.is_public = 1"
+            query += """
+                AND r.is_public = 1
+                AND (
+                    r.contributor_role <> 'chef'
+                    OR COALESCE(cp.is_active, 0) = 1
+                )
+            """
         query += " LIMIT 1"
 
         cursor = connection.cursor(dictionary=True)
         cursor.execute(query, tuple(params))
         return cursor.fetchone()
 
+    def list_recipes_by_contributor(self, connection, contributor_user_id):
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            f"""
+            SELECT
+                {self.RECIPE_COLUMNS}
+            FROM recipes r
+            LEFT JOIN chef_profiles cp ON cp.id = r.chef_id
+            WHERE r.contributor_user_id = %s
+            ORDER BY r.created_at DESC, r.id DESC
+            """,
+            (contributor_user_id,),
+        )
+        return cursor.fetchall()
+
     def list_recipes_by_chef(self, connection, chef_id, public_only=False):
         query = f"""
             SELECT
                 {self.RECIPE_COLUMNS}
             FROM recipes r
-            INNER JOIN chef_profiles cp ON cp.id = r.chef_id
+            LEFT JOIN chef_profiles cp ON cp.id = r.chef_id
             WHERE r.chef_id = %s
         """
         params = [chef_id]
@@ -153,9 +216,12 @@ class RecipeRepository:
             SELECT
                 {self.RECIPE_COLUMNS}
             FROM recipes r
-            INNER JOIN chef_profiles cp ON cp.id = r.chef_id
+            LEFT JOIN chef_profiles cp ON cp.id = r.chef_id
             WHERE r.is_public = 1
-              AND cp.is_active = 1
+              AND (
+                  r.contributor_role <> 'chef'
+                  OR COALESCE(cp.is_active, 0) = 1
+              )
         """
         params = []
         if filters.get("category"):
@@ -164,9 +230,23 @@ class RecipeRepository:
         if filters.get("cuisine"):
             query += " AND r.cuisine LIKE %s"
             params.append(f"%{filters['cuisine']}%")
+        if filters.get("state"):
+            query += " AND r.origin_state LIKE %s"
+            params.append(f"%{filters['state']}%")
+        if filters.get("region"):
+            query += " AND r.origin_region LIKE %s"
+            params.append(f"%{filters['region']}%")
         if filters.get("q"):
-            query += " AND (r.name LIKE %s OR r.description LIKE %s OR cp.display_name LIKE %s)"
-            params.extend([f"%{filters['q']}%"] * 3)
+            query += """
+                AND (
+                    r.name LIKE %s
+                    OR r.description LIKE %s
+                    OR r.contributor_name LIKE %s
+                    OR r.origin_state LIKE %s
+                    OR cp.display_name LIKE %s
+                )
+            """
+            params.extend([f"%{filters['q']}%"] * 5)
         query += " ORDER BY r.views_count DESC, r.created_at DESC, r.id DESC LIMIT %s OFFSET %s"
         params.extend([filters["limit"], filters["offset"]])
 
@@ -270,14 +350,14 @@ class RecipeRepository:
             steps.setdefault(row["recipe_id"], []).append(row)
         return steps
 
-    def slug_exists(self, connection, chef_id, slug, exclude_recipe_id=None):
+    def slug_exists(self, connection, contributor_user_id, slug, exclude_recipe_id=None):
         query = """
             SELECT id
             FROM recipes
-            WHERE chef_id = %s
+            WHERE contributor_user_id = %s
               AND slug = %s
         """
-        params = [chef_id, slug]
+        params = [contributor_user_id, slug]
         if exclude_recipe_id is not None:
             query += " AND id <> %s"
             params.append(exclude_recipe_id)

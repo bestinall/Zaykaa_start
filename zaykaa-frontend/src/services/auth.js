@@ -7,6 +7,8 @@ const unwrapResponse = (response) => response?.data?.data ?? response?.data ?? {
 const normalizeUser = (user = {}) => ({
   ...user,
   name: user.name || user.full_name || user.displayName || '',
+  nativeState: user.nativeState || user.native_state || '',
+  nativeRegion: user.nativeRegion || user.native_region || '',
 });
 
 export const authService = {
@@ -23,8 +25,12 @@ export const authService = {
       const payload = {
         ...userData,
         full_name: userData.full_name || userData.name,
+        native_state: userData.native_state || userData.nativeState,
+        native_region: userData.native_region || userData.nativeRegion,
       };
       delete payload.name;
+      delete payload.nativeState;
+      delete payload.nativeRegion;
       const response = await api.post('/auth/register', payload);
       const data = unwrapResponse(response);
       if (data.user) {

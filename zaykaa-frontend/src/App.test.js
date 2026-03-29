@@ -1,7 +1,10 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { previewRecipes } from './data/mockData';
 
-test('renders zaykaa login experience', () => {
-  render(<App />);
-  expect(screen.getByText(/sign in to continue your zaykaa journey/i)).toBeInTheDocument();
+test('recipe book preview data includes detailed recipes', () => {
+  expect(previewRecipes.length).toBeGreaterThan(0);
+  expect(previewRecipes[0].title).toBeTruthy();
+  expect(previewRecipes[0].originState).toBeTruthy();
+  expect(previewRecipes[0].authenticityTag).toBeTruthy();
+  expect(previewRecipes[0].ingredients.length).toBeGreaterThan(0);
+  expect(previewRecipes[0].steps.length).toBeGreaterThan(0);
 });

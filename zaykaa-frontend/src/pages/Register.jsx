@@ -24,6 +24,11 @@ const roles = [
     description: 'Run your menu, bookings, recipe library, and analytics from one studio.',
   },
   {
+    value: 'seller',
+    title: 'Food Seller',
+    description: 'Share recipes, publish food ideas, and manage your contribution space in one place.',
+  },
+  {
     value: 'agent',
     title: 'Delivery Agent',
     description: 'Support operations with delivery-focused access and assigned handoffs.',
@@ -42,6 +47,8 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     role: 'user',
+    nativeState: '',
+    nativeRegion: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,11 +73,14 @@ const Register = () => {
     if (!formData.name || !formData.email || !formData.password) {
       return 'All fields are required.';
     }
+    if (['chef', 'seller'].includes(formData.role) && !formData.nativeState.trim()) {
+      return 'Native state is required for chefs and sellers.';
+    }
     if (formData.password !== formData.confirmPassword) {
       return 'Passwords do not match.';
     }
-    if (formData.password.length < 6) {
-      return 'Password must be at least 6 characters.';
+    if (formData.password.length < 8) {
+      return 'Password must be at least 8 characters.';
     }
     return '';
   };
@@ -94,6 +104,8 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
         role: formData.role,
+        nativeState: formData.nativeState,
+        nativeRegion: formData.nativeRegion,
       });
       toast.success('Account created', 'You can now sign in to Zaykaa.');
       navigate('/login?message=Registration successful. Please login.');
@@ -222,6 +234,35 @@ const Register = () => {
                     ))}
                   </div>
                 </div>
+
+                {['chef', 'seller'].includes(formData.role) && (
+                  <div className="rounded-[1.6rem] border border-brand/20 bg-brand/10 p-5">
+                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand">
+                      Regional authenticity
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-slate-700 dark:text-slate-200">
+                      Chefs and sellers publish food with profile-linked regional origins, so your
+                      native state helps Zaykaa preserve authentic cuisine stories.
+                    </p>
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                      <FloatingInput
+                        label="Native state"
+                        type="text"
+                        name="nativeState"
+                        value={formData.nativeState}
+                        onChange={handleChange}
+                        required
+                      />
+                      <FloatingInput
+                        label="Native region (optional)"
+                        type="text"
+                        name="nativeRegion"
+                        value={formData.nativeRegion}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <FloatingInput

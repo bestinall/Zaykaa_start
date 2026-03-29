@@ -77,13 +77,25 @@ const Dashboard = () => {
       accent: 'from-amber-400 to-orange-500',
     },
     {
-      label: user?.role === 'chef' ? 'Chef Studio' : 'Recent Activity',
-      title: user?.role === 'chef' ? 'Open your chef dashboard' : 'Continue from your latest order',
+      label:
+        user?.role === 'chef'
+          ? 'Chef Studio'
+          : user?.role === 'seller'
+            ? 'Recipe Book'
+            : 'Recent Activity',
+      title:
+        user?.role === 'chef'
+          ? 'Open your chef dashboard'
+          : user?.role === 'seller'
+            ? 'Publish and manage your recipes'
+            : 'Continue from your latest order',
       description:
         user?.role === 'chef'
           ? 'Review bookings, menu management, analytics, and recipe performance.'
-          : 'See recent order history and pick up from your last favorite kitchen.',
-      to: user?.role === 'chef' ? '/chef-dashboard' : '/order',
+          : user?.role === 'seller'
+            ? 'Share cooking methods, update your published dishes, and build your recipe presence.'
+            : 'See recent order history and pick up from your last favorite kitchen.',
+      to: user?.role === 'chef' ? '/chef-dashboard' : user?.role === 'seller' ? '/recipes' : '/order',
       accent: 'from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300',
       inverse: true,
     },
