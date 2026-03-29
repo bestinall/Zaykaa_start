@@ -2,82 +2,94 @@
 
 Zaykaa Start is a full-stack food platform that combines:
 
-- user and chef authentication
-- chef discovery and at-home chef booking
-- restaurant browsing, cart, coupon, and order flows
-- chef-side booking, recipe, menu, and analytics tools
-- a migration-in-progress backend made of an API gateway, multiple Flask microservices, and a legacy Flask compatibility backend
+- account registration and JWT-based authentication
+- chef discovery, availability lookup, and at-home chef bookings
+- restaurant browsing, cart, coupon validation, and food ordering
+- chef profile, recipe, ratings, and analytics workflows
+- user profile, preferences, meal plan, and nutrition tracking APIs
+- payment, refund, payout, and payment-event workflows
 
-The current codebase is in a migration phase. The React frontend already talks to the API gateway, the gateway routes requests to the new microservices, and a smaller legacy backend still exists for compatibility and fallback behavior.
+The repository is in an active migration phase. The React frontend talks to the API gateway, the gateway proxies requests to Flask microservices, and a smaller legacy Flask backend still exists for compatibility and fallback behavior.
+
+## Recent Updates
+
+- Added `payment_service` on port `5006`, plus gateway aliases for `/api/payments` and `/api/payouts`
+- Added the `zaykaa_payment_service` MySQL database to the stack and Docker Compose flow
+- Expanded user and chef profile/location support with `native_state` and `native_region`
+- Added public and managed recipe APIs, plus a frontend `/recipes` route
+- Frontend now uses Tailwind CSS, Framer Motion, theme state, and toast state in addition to auth and cart state
 
 ## Project Status
 
-This repository currently has two backend styles running side by side:
+The workspace currently runs two backend styles side by side:
 
 1. New microservices:
+   - `api_gateway`
    - `user_service`
    - `chef_service`
    - `booking_service`
    - `order_service`
-   - `api_gateway`
+   - `payment_service`
 2. Legacy compatibility backend:
    - `zaykaa-backend`
 
-The recommended local workflow is to start the whole stack from the repository root with `npm start`, which launches the frontend, gateway, microservices, and legacy backend together.
+The recommended local workflow is to start the stack from the repository root with `npm start`. That launches the frontend, gateway, all current microservices, and the legacy backend together.
 
-## What The Project Does
+## What The Platform Does
 
 ### User-facing features
 
-- register and log in as a user or chef
-- browse chefs and view chef availability
-- book a chef for a home dining experience
+- register and log in
+- browse chefs and public recipes
+- check chef availability and place chef bookings
 - browse restaurants and menus
 - manage a single-restaurant cart
 - validate coupons and place food orders
-- view recent orders on the dashboard
+- review recent orders from the dashboard
 
-### Chef-facing features
+### Chef/platform-facing features
 
-- view chef bookings
-- update chef booking status
-- manage recipes
-- manage chef menu UI
-- view chef analytics
+- manage chef profiles and availability
+- manage chef-owned recipes
+- view chef bookings and update booking status
+- add ratings and fetch analytics snapshots
+- initiate payments, verify payments, process refunds, and create payouts through the new payment APIs
 
 ### Platform/API features
 
-- JWT-based authentication
-- gateway-level request logging and in-memory rate limiting
-- gateway compatibility aliases so the existing frontend can keep using simpler `/api/...` paths
-- raw SQL + MySQL for the microservices
-- schema bootstrap on service startup
+- JWT authentication across gateway and services
+- gateway request logging with request ids
+- in-memory rate limiting at the gateway
+- gateway alias routes so the frontend can keep using simple `/api/...` paths
+- raw SQL plus MySQL connection pooling for the microservices
+- schema bootstrap and lightweight migrations on service startup
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A[React Frontend<br/>Port 3000] -->|Axios /api requests| B[API Gateway<br/>Port 5000]
+    FE[React Frontend<br/>Port 3000] -->|Axios /api requests| GW[API Gateway<br/>Port 5000]
 
-    B --> C[User Service<br/>Port 5001]
-    B --> D[Legacy Backend<br/>Port 5002]
-    B --> E[Chef Service<br/>Port 5003]
-    B --> F[Booking Service<br/>Port 5004]
-    B --> G[Order Service<br/>Port 5005]
+    GW --> US[User Service<br/>Port 5001]
+    GW --> LB[Legacy Backend<br/>Port 5002]
+    GW --> CS[Chef Service<br/>Port 5003]
+    GW --> BS[Booking Service<br/>Port 5004]
+    GW --> OS[Order Service<br/>Port 5005]
+    GW --> PS[Payment Service<br/>Port 5006]
 
-    C --> H[(zaykaa_user_service)]
-    D --> I[(zaykaa_db)]
-    E --> J[(zaykaa_chef_service)]
-    F --> K[(zaykaa_booking_service)]
-    G --> L[(zaykaa_order_service)]
+    US --> UDB[(zaykaa_user_service)]
+    LB --> LDB[(zaykaa_db)]
+    CS --> CDB[(zaykaa_chef_service)]
+    BS --> BDB[(zaykaa_booking_service)]
+    OS --> ODB[(zaykaa_order_service)]
+    PS --> PDB[(zaykaa_payment_service)]
 
-    F --> C
-    F --> E
+    BS --> US
+    BS --> CS
+    PS --> OS
 ```
 
-## Information Flow
-
-### Request flow
+## Request Flow
 
 ```mermaid
 sequenceDiagram
@@ -87,43 +99,15 @@ sequenceDiagram
     participant SVC as Target Service
     participant DB as MySQL
 
-    U->>FE: Login / Browse / Book / Order
+    U->>FE: Login / Browse / Book / Order / Pay
     FE->>GW: /api/... request
-    GW->>GW: Add request id, rate-limit, validate JWT if needed
-    GW->>SVC: Proxy mapped route
+    GW->>GW: Add request id, apply rate limit, validate JWT when needed
+    GW->>SVC: Proxy to mapped service route
     SVC->>DB: Execute SQL / read or write data
     DB-->>SVC: Query result
     SVC-->>GW: JSON response
     GW-->>FE: API response
-    FE->>FE: Update AuthContext / CartContext / page state
 ```
-
-### Login flow
-
-1. User submits email and password from the React login page.
-2. Frontend calls `/api/auth/login`.
-3. API gateway proxies that request to `user_service` at `/api/v1/users/auth/login`.
-4. `user_service` validates credentials, generates JWT, and returns user data.
-5. Frontend stores token and user info in `localStorage` through `AuthContext`.
-6. Future API requests automatically include `Authorization: Bearer <token>` through the shared Axios instance.
-
-### Booking flow
-
-1. Frontend loads available chefs from `/api/chefs/available`.
-2. Gateway maps that to `chef_service`.
-3. User selects a chef and requests availability.
-4. Gateway maps availability to `booking_service`.
-5. User submits booking details to `/api/bookings`.
-6. `booking_service` checks its own data and coordinates with `user_service` and `chef_service` as needed.
-
-### Ordering flow
-
-1. Frontend loads restaurants from `/api/restaurants`.
-2. Gateway proxies that to `order_service`.
-3. User adds items to the cart; `CartContext` keeps one restaurant active at a time.
-4. Frontend can validate coupons with `/api/coupons/validate`.
-5. User submits `/api/orders`.
-6. `order_service` creates the order, order items, and status history.
 
 ## Repository Layout
 
@@ -140,11 +124,13 @@ Zaykaa_Start/
 |   |-- user_service/
 |   |-- chef_service/
 |   |-- booking_service/
-|   `-- order_service/
+|   |-- order_service/
+|   `-- payment_service/
 |-- zaykaa-backend/
 |   `-- app.py
 `-- zaykaa-frontend/
     |-- package.json
+    |-- tailwind.config.js
     `-- src/
         |-- pages/
         |-- components/
@@ -158,12 +144,13 @@ Zaykaa_Start/
 | Component | Port | Purpose | Data Store | Notes |
 |---|---:|---|---|---|
 | Frontend | 3000 | React UI for users and chefs | Browser state, localStorage | Started via `react-scripts` |
-| API Gateway | 5000 | Single entry point, JWT validation, aliases, rate limiting | None directly | Proxies to services and fallback backend |
+| API Gateway | 5000 | Entry point, JWT validation, aliases, rate limiting, aggregated health | None directly | Proxies to services and optional legacy fallback |
 | User Service | 5001 | Auth, profile, preferences, meal plans, nutrition | `zaykaa_user_service` | Raw SQL, MySQL pool |
-| Legacy Backend | 5002 | Compatibility backend for legacy routes and fallback behavior | `zaykaa_db` | Flask-SQLAlchemy |
-| Chef Service | 5003 | Chef profiles, discovery, recipes, analytics | `zaykaa_chef_service` | Raw SQL, MySQL pool |
-| Booking Service | 5004 | Chef booking lifecycle | `zaykaa_booking_service` | Talks to user + chef services |
+| Legacy Backend | 5002 | Compatibility backend for fallback routes | `zaykaa_db` | Flask-SQLAlchemy |
+| Chef Service | 5003 | Chef profiles, discovery, availability, recipes, ratings, analytics | `zaykaa_chef_service` | Raw SQL, MySQL pool |
+| Booking Service | 5004 | Chef booking lifecycle and availability checks | `zaykaa_booking_service` | Calls user and chef services as needed |
 | Order Service | 5005 | Restaurants, cart, coupons, orders | `zaykaa_order_service` | Raw SQL, MySQL pool |
+| Payment Service | 5006 | Payments, refunds, payouts, payment events | `zaykaa_payment_service` | Integrates with order data and provider abstractions |
 | MySQL | 3306 | Main database server | All DBs above | Local MySQL or Docker MySQL |
 
 ## Frontend
@@ -172,39 +159,45 @@ Zaykaa_Start/
 
 | Route | Purpose | Access |
 |---|---|---|
-| `/login` | User/chef login | Public |
+| `/login` | User and chef login | Public |
 | `/register` | Registration | Public |
-| `/dashboard` | User landing page + recent orders | Authenticated |
+| `/dashboard` | User landing page and recent orders | Authenticated |
+| `/recipes` | Recipe discovery page | Authenticated |
 | `/book-chef` | Chef browsing and booking | Authenticated |
 | `/order` | Restaurant browsing, menu, cart, and checkout | Authenticated |
-| `/chef-dashboard` | Chef bookings, recipes, menu, analytics | Authenticated, role=`chef` |
+| `/chef-dashboard` | Chef bookings, recipes, profile, and analytics tools | Authenticated, role=`chef` |
 
 ### Frontend state and client behavior
 
-- `AuthContext` stores the JWT token and current user in `localStorage`.
-- `CartContext` stores the active restaurant cart and enforces one restaurant per cart session.
-- The shared Axios client points to `REACT_APP_API_URL` and defaults to `http://localhost:5000/api`.
-- Axios automatically adds the Bearer token to requests.
-- A `401` response clears local auth state and redirects the user back to `/login`.
+- `AuthContext` stores the JWT token and current user in `localStorage`
+- `CartContext` stores the active cart and enforces one restaurant at a time
+- `ThemeProvider` handles theme preferences across the app shell
+- `ToastProvider` powers in-app feedback and status toasts
+- The shared Axios client defaults to `REACT_APP_API_URL=http://localhost:5000/api`
+- Axios automatically adds the Bearer token when a session exists
+- A `401` response clears local auth state and redirects back to `/login`
 
 ### Important frontend files
 
 - `zaykaa-frontend/src/App.js`
 - `zaykaa-frontend/src/context/AuthContext.js`
 - `zaykaa-frontend/src/context/CartContext.js`
+- `zaykaa-frontend/src/context/ThemeContext.js`
+- `zaykaa-frontend/src/context/ToastContext.js`
 - `zaykaa-frontend/src/services/api.js`
+- `zaykaa-frontend/src/services/payment.js`
 - `zaykaa-frontend/src/pages/*`
 
 ## Backend Design
 
 ### Shared microservice patterns
 
-Each microservice follows a similar structure:
+Each microservice follows the same high-level structure:
 
-- `controllers/` for Flask blueprints and HTTP request handling
+- `controllers/` for Flask blueprints and HTTP handling
 - `services/` for business logic
-- `repositories/` for SQL/database access
-- `database/` for connection bootstrap, schema, and raw SQL query files
+- `repositories/` for SQL access
+- `database/` for schema/bootstrap/connection logic
 - `middleware/` for auth and error handling
 - `utils/` for validators, logging, responses, and JWT helpers
 
@@ -212,12 +205,13 @@ Each microservice follows a similar structure:
 
 On startup, each microservice:
 
-1. loads environment variables
-2. configures logging
-3. bootstraps its database schema from `schema.sql`
-4. initializes a MySQL connection pool
-5. registers Flask blueprints
-6. exposes a `/health` endpoint
+1. loads environment variables from its local `.env`
+2. configures logging and Flask settings
+3. bootstraps its schema from `schema.sql`
+4. applies lightweight follow-up migrations where needed
+5. initializes a MySQL connection pool
+6. registers its blueprints
+7. exposes a `/health` endpoint
 
 ### API gateway responsibilities
 
@@ -227,24 +221,13 @@ The gateway is the main backend entry point for the frontend and currently handl
 - in-memory rate limiting
 - JWT validation for protected routes
 - proxying `/api/v1/...` service routes
-- compatibility aliases such as `/api/auth/login`, `/api/bookings`, `/api/restaurants`, `/api/orders/recent`
-- fallback proxying to the legacy backend for routes not yet migrated
+- compatibility aliases such as `/api/auth/login`, `/api/bookings`, `/api/restaurants`, `/api/orders/recent`, `/api/payments`, and `/api/payouts`
+- aggregated `/api/health` reporting across the active services
+- fallback proxying to the legacy backend for unmatched `/api/<path>` routes when `LEGACY_BACKEND_URL` is configured
 
 ### Legacy backend responsibilities
 
-The legacy backend still provides or simulates:
-
-- `/api/auth/register`
-- `/api/auth/login`
-- `/api/chefs/available`
-- `/api/chefs/:id/availability`
-- `/api/restaurants`
-- `/api/orders`
-- `/api/orders/recent`
-- `/api/bookings`
-- `/api/health`
-
-It uses Flask-SQLAlchemy instead of the raw SQL + repository structure used by the new services.
+The legacy backend is still part of the local development stack, but it is now mainly a compatibility layer. The new microservices handle the main migrated auth, chef, booking, order, recipe, and payment routes. The gateway only falls back to `zaykaa-backend` for routes that do not match a current service mapping.
 
 ## Service Breakdown
 
@@ -252,13 +235,13 @@ It uses Flask-SQLAlchemy instead of the raw SQL + repository structure used by t
 
 Responsibilities:
 
-- register and log in users
-- verify/logout sessions
-- manage user profile
-- manage preferences
+- user registration and login
+- session verify and logout
+- profile CRUD
+- preference storage
 - meal plan CRUD
-- nutrition log CRUD
-- nutrition summary reporting
+- nutrition log CRUD and summary reporting
+- support for `native_state` and `native_region` profile fields
 
 Docs:
 
@@ -271,9 +254,11 @@ Responsibilities:
 - chef profile CRUD
 - public chef discovery
 - chef availability management
-- recipe CRUD
+- public recipe catalog
+- chef-owned recipe management
 - ratings aggregation
-- chef analytics snapshot
+- analytics snapshots
+- recipe origin enrichment from chef/user location fields where available
 
 Docs:
 
@@ -283,13 +268,12 @@ Docs:
 
 Responsibilities:
 
-- create bookings
-- validate chef availability
-- show user booking history
-- show chef booking queue
-- update booking status
-- cancellation flow
-- booking analytics
+- booking creation
+- availability lookup
+- user booking history
+- chef booking queue
+- booking cancellation
+- chef booking status updates
 
 Docs:
 
@@ -300,27 +284,41 @@ Docs:
 Responsibilities:
 
 - restaurant catalog
-- menu items
+- menu retrieval
 - coupon validation
-- cart storage/update
+- cart storage and updates
 - order creation
-- order history
-- order tracking
-- order cancellation
+- order history and recent-order retrieval
+- order tracking and cancellation
 
 Docs:
 
 - [Order Service README](microservices/order_service/README.md)
+
+### Payment Service
+
+Responsibilities:
+
+- payment initiation for existing orders
+- payment verification
+- partial and full refunds
+- payout creation and lookup
+- payment event history
+- provider abstraction for `mock`, `stripe`, and `razorpay`
+
+Docs:
+
+- [Payment Service README](microservices/payment_service/README.md)
 
 ### API Gateway
 
 Responsibilities:
 
 - route mapping and proxying
-- request throttling
 - JWT guard
+- request throttling
 - aggregated health reporting
-- compatibility layer between current frontend routes and the new service URLs
+- alias compatibility between frontend-friendly routes and microservice URLs
 
 Docs:
 
@@ -328,28 +326,30 @@ Docs:
 
 ## Database Overview
 
-The workspace currently uses five MySQL databases:
+The workspace currently uses six MySQL databases:
 
 | Database | Used By | Purpose | Examples of Main Tables |
 |---|---|---|---|
-| `zaykaa_db` | Legacy backend | Legacy compatibility data store | `users`, `chefs`, `orders` |
+| `zaykaa_db` | Legacy backend | Compatibility and fallback data store | `users`, `chefs`, `orders` |
 | `zaykaa_user_service` | User service | Auth, profile, preferences, nutrition | `users`, `user_preferences`, `meal_plans`, `nutrition_logs` |
 | `zaykaa_chef_service` | Chef service | Chef data and recipes | `chef_profiles`, `chef_availability_slots`, `recipes` |
 | `zaykaa_booking_service` | Booking service | Booking lifecycle | `bookings`, `booking_status_history` |
 | `zaykaa_order_service` | Order service | Catalog, cart, coupons, orders | `restaurants`, `menu_items`, `orders`, `order_items` |
+| `zaykaa_payment_service` | Payment service | Payments, refunds, payouts | `payments`, `payment_events`, `refunds`, `payouts` |
 
 ### Database bootstrap
 
-Each microservice schema file starts with `CREATE DATABASE IF NOT EXISTS ...` and `USE ...`, so the service can create its own database structure on startup as long as MySQL is reachable with sufficient privileges.
+Each microservice schema starts with `CREATE DATABASE IF NOT EXISTS ...` and `USE ...`, so the service can create its own database structure on startup as long as MySQL is reachable and the configured MySQL user has sufficient privileges.
 
 ## Tech Stack
 
 | Layer | Stack |
 |---|---|
-| Frontend | React 19, React Router DOM 7, Axios, CSS |
-| Frontend build | Create React App / `react-scripts` 5 |
+| Frontend | React 19, React Router DOM 7, Axios, Tailwind CSS, Framer Motion |
+| Frontend build | Create React App, `react-scripts` 5, PostCSS, Autoprefixer |
 | API Gateway | Flask 3, Requests, custom proxy layer |
 | Microservices | Flask 3, raw SQL, `mysql-connector-python`, JWT, CORS |
+| Payment provider abstraction | `mock`, `stripe`, `razorpay` provider interfaces |
 | Legacy backend | Flask 3, Flask-SQLAlchemy, PyMySQL, bcrypt |
 | Authentication | JWT |
 | Database | MySQL 8 |
@@ -358,45 +358,44 @@ Each microservice schema file starts with `CREATE DATABASE IF NOT EXISTS ...` an
 
 ## Prerequisites
 
-- Python 3.13+
+- Python 3.13 or compatible
 - Node.js 22.14.0 or compatible
 - npm 10.9.2 or compatible
-- MySQL 8.x running locally if you use the local startup path
-- Docker Desktop / Docker Engine if you use the Compose path
+- MySQL 8.x if you use the local startup path
+- Docker Desktop or Docker Engine if you use the Compose path
 
 Important note:
 
-- The repository is configured to use your system Python installation for services.
-- A local virtual environment is not required by the root workflow.
+- the repo is configured to use your system Python installation for the services
+- a local virtual environment is optional, not required by the root workflow
 
 ## Environment Configuration
 
 The project reads environment variables from:
 
+- `.env.example` at the repo root for Docker Compose values such as `MYSQL_ROOT_PASSWORD`
 - `zaykaa-backend/.env`
 - `microservices/user_service/.env`
 - `microservices/chef_service/.env`
 - `microservices/booking_service/.env`
 - `microservices/order_service/.env`
+- `microservices/payment_service/.env`
 - `microservices/api_gateway/.env`
+- `zaykaa-frontend/.env`
 
-Use the example files as templates and keep the real `.env` files local only:
+Use the example files as templates and keep real `.env` files local only.
 
-- `cp .env.example .env` at the repo root for Docker Compose variables if needed
-- copy each service's `.env.example` to `.env`
-- copy `zaykaa-backend/.env.example` to `zaykaa-backend/.env`
-- copy `zaykaa-frontend/.env.example` to `zaykaa-frontend/.env`
-
-### Shared values used across the stack
+### Shared values used across most services
 
 | Key | Meaning |
 |---|---|
 | `JWT_SECRET` | Shared JWT signing secret |
+| `JWT_ISSUER` | Expected JWT issuer |
 | `DB_HOST` | MySQL host |
 | `DB_PORT` | MySQL port |
 | `DB_USER` | MySQL username |
 | `DB_PASSWORD` | MySQL password |
-| `DB_NAME` | Target database name |
+| `DB_NAME` | Target database name for the service |
 | `CORS_ORIGINS` | Allowed frontend origins |
 
 ### Gateway-specific values
@@ -407,9 +406,24 @@ Use the example files as templates and keep the real `.env` files local only:
 | `CHEF_SERVICE_URL` | Chef service base URL |
 | `BOOKING_SERVICE_URL` | Booking service base URL |
 | `ORDER_SERVICE_URL` | Order service base URL |
+| `PAYMENT_SERVICE_URL` | Payment service base URL |
 | `LEGACY_BACKEND_URL` | Legacy backend base URL |
 | `RATE_LIMIT_WINDOW_SECONDS` | Rate-limit window |
 | `RATE_LIMIT_MAX_REQUESTS` | Max requests per window |
+| `UPSTREAM_TIMEOUT_SECONDS` | Gateway upstream timeout |
+
+### Payment service values
+
+| Key | Meaning | Default |
+|---|---|---|
+| `ORDER_SERVICE_URL` | Order service base URL used for payment/order coordination | `http://127.0.0.1:5005` |
+| `PAYMENT_PROVIDER` | Active provider implementation | `mock` |
+| `DEFAULT_CURRENCY` | Default payment currency | `INR` |
+| `PLATFORM_FEE_PERCENT` | Platform fee used in payout calculations | `15` |
+| `STRIPE_SECRET_KEY` | Stripe integration secret | empty |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook secret | empty |
+| `RAZORPAY_KEY_ID` | Razorpay key id | empty |
+| `RAZORPAY_KEY_SECRET` | Razorpay secret | empty |
 
 ### Frontend-specific value
 
@@ -429,11 +443,12 @@ This is the most complete way to run the project because it starts:
 - chef service
 - booking service
 - order service
+- payment service
 - legacy backend
 
 Steps:
 
-1. Install Python packages into your system Python:
+1. Install backend Python packages:
 
    ```powershell
    python -m pip install -r requirements.txt
@@ -451,7 +466,7 @@ Steps:
    npm run frontend:install
    ```
 
-3. Make sure MySQL is running and reachable at the host/port expected by your `.env` files.
+3. Make sure MySQL is running and reachable with the values in your `.env` files.
 
 4. Start the full stack:
 
@@ -459,13 +474,9 @@ Steps:
    npm start
    ```
 
-5. Open the frontend:
+5. Open the frontend at `http://localhost:3000`.
 
-   - `http://localhost:3000`
-
-6. Check gateway health:
-
-   - `http://localhost:5000/api/health`
+6. Check aggregated gateway health at `http://localhost:5000/api/health`.
 
 ### Option B: Docker Compose
 
@@ -476,6 +487,7 @@ Steps:
 - chef service
 - booking service
 - order service
+- payment service
 - API gateway
 
 It does not currently start:
@@ -491,7 +503,7 @@ docker compose up --build
 
 If you use Docker Compose and also need the frontend or legacy backend, run those separately outside Docker.
 
-### Option C: Run services individually
+### Option C: Run components individually
 
 | Component | Command |
 |---|---|
@@ -501,6 +513,7 @@ If you use Docker Compose and also need the frontend or legacy backend, run thos
 | Chef service | `cd microservices/chef_service && python app.py` |
 | Booking service | `cd microservices/booking_service && python app.py` |
 | Order service | `cd microservices/order_service && python app.py` |
+| Payment service | `cd microservices/payment_service && python app.py` |
 | Legacy backend | `cd zaykaa-backend && python app.py` |
 
 ## Root NPM Scripts
@@ -509,63 +522,69 @@ If you use Docker Compose and also need the frontend or legacy backend, run thos
 |---|---|
 | `npm start` | Start the full local stack |
 | `npm run frontend:install` | Install frontend dependencies |
-| `npm run frontend:audit` | Run `npm audit` for the frontend package |
-| `npm run frontend:audit:fix` | Run a non-force audit fix for the frontend package |
-| `npm run frontend:audit:fix:force` | Run a force audit fix for the frontend package |
+| `npm run frontend:audit` | Run `npm audit` inside `zaykaa-frontend` |
+| `npm run frontend:audit:fix` | Run a non-force audit fix inside `zaykaa-frontend` |
+| `npm run frontend:audit:fix:force` | Run a force audit fix inside `zaykaa-frontend` |
 
-## Health Checks And Verification
+## Health Checks
 
 ### HTTP health endpoints
 
-- Gateway: `http://localhost:5000/health` and `http://localhost:5000/api/health`
+- Gateway: `http://localhost:5000/health`
+- Gateway aggregated health: `http://localhost:5000/api/health`
 - User service: `http://localhost:5001/health`
 - Legacy backend: `http://localhost:5002/api/health`
 - Chef service: `http://localhost:5003/health`
 - Booking service: `http://localhost:5004/health`
 - Order service: `http://localhost:5005/health`
+- Payment service: `http://localhost:5006/health`
 
 ### Database connectivity
 
-The expected local MySQL databases are:
+The expected MySQL databases are:
 
 - `zaykaa_db`
 - `zaykaa_user_service`
 - `zaykaa_chef_service`
 - `zaykaa_booking_service`
 - `zaykaa_order_service`
+- `zaykaa_payment_service`
 
-If the services start successfully, they bootstrap their schema and expose healthy status responses. You can also verify MySQL connectivity directly with a small Python or MySQL client probe if needed.
+If a service starts successfully, it bootstraps its schema and exposes a healthy status response.
 
-## API Map
+## API Summary
 
-The frontend primarily uses these gateway aliases:
+The frontend mainly uses these gateway routes:
 
-| Frontend capability | Gateway route examples | Downstream service |
+| Capability | Gateway route examples | Downstream service |
 |---|---|---|
 | Auth | `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/verify` | `user_service` |
-| User APIs | `/api/v1/users/...` | `user_service` |
-| Chef browse | `/api/chefs/available`, `/api/chefs/:id`, `/api/chefs/:id/recipes` | `chef_service` |
-| Chef availability / bookings | `/api/chefs/:id/availability`, `/api/bookings`, `/api/bookings/my` | `booking_service` |
-| Chef dashboard | `/api/chef/bookings`, `/api/chef/recipes`, `/api/chef/analytics` | `booking_service` + `chef_service` |
-| Ordering | `/api/restaurants`, `/api/orders`, `/api/orders/cart`, `/api/orders/recent`, `/api/coupons/validate` | `order_service` |
-| Fallback legacy routes | `/api/<path>` | `zaykaa-backend` |
+| User profile and nutrition | `/api/v1/users/profile`, `/api/v1/users/preferences`, `/api/v1/users/meal-plans`, `/api/v1/users/nutrition/logs` | `user_service` |
+| Chef browse and recipes | `/api/chefs/available`, `/api/chefs/:id`, `/api/chefs/:id/recipes`, `/api/all-recipes`, `/api/v1/recipes` | `chef_service` |
+| Chef management | `/api/chef/profile`, `/api/chef/availability`, `/api/chef/recipes`, `/api/chef/analytics` | `chef_service` |
+| Bookings | `/api/bookings`, `/api/bookings/my`, `/api/bookings/:id/cancel`, `/api/chefs/:id/availability` | `booking_service` |
+| Orders | `/api/restaurants`, `/api/coupons/validate`, `/api/orders`, `/api/orders/cart`, `/api/orders/recent` | `order_service` |
+| Payments | `/api/payments`, `/api/payments/my`, `/api/payments/order/:orderId`, `/api/payments/:id/verify`, `/api/payments/:id/refund` | `payment_service` |
+| Payouts (admin only) | `/api/payouts`, `/api/payouts/:id` | `payment_service` |
+| Fallback legacy routes | `/api/<path>` when no microservice route matches | `zaykaa-backend` |
 
-For the full route lists and example payloads, see:
+For full route lists and example payloads, see:
 
 - [API Gateway README](microservices/api_gateway/README.md)
 - [User Service README](microservices/user_service/README.md)
 - [Chef Service README](microservices/chef_service/README.md)
 - [Booking Service README](microservices/booking_service/README.md)
 - [Order Service README](microservices/order_service/README.md)
+- [Payment Service README](microservices/payment_service/README.md)
 
-## Current Notes And Limitations
+## Notes And Limitations
 
-- The project is in a migration phase, so the gateway and legacy backend both still matter.
-- The React app has clear user and chef flows; `agent` and `vlogger` appear in registration data, but dedicated frontend dashboards/routes for them are not implemented in the current UI.
-- Docker Compose currently covers the microservices stack, but not the frontend or legacy backend.
-- The frontend can still show ESLint warnings in some booking components; those are warnings, not startup blockers.
-- The frontend dependency tree still has remaining `npm audit` items because `react-scripts@5` brings older transitive packages. A blind `npm audit fix --force` is not recommended without validating the build.
-- The legacy backend is intentionally smaller than the original monolith and acts mainly as a compatibility layer.
+- The repo is still in a migration phase, so the gateway and legacy backend both matter for local development
+- Registration payloads support multiple roles, but the current frontend navigation is still centered on user and chef experiences
+- The frontend already has a payment service client, but there is no dedicated payment page or payout dashboard route in `App.js` yet
+- `payment_service` defaults to the mock provider locally; Stripe and Razorpay abstractions are present for later real-provider integration
+- `native_state` is currently required for `chef` and `seller` registration payloads in the user-service validator
+- Docker Compose does not start the frontend or legacy backend
 
 ## Troubleshooting
 
@@ -577,39 +596,34 @@ Install frontend dependencies:
 npm run frontend:install
 ```
 
-### `npm audit fix --force` fails at the repo root
+### Python import or dependency errors
 
-Use the root helper scripts instead:
-
-```powershell
-npm run frontend:audit
-npm run frontend:audit:fix
-```
-
-Reason:
-
-- the real React package and lockfile live inside `zaykaa-frontend`
-- the repo root is an orchestration package, not the frontend app itself
-
-### Python package import errors
-
-Reinstall Python dependencies:
+Reinstall backend dependencies:
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-### MySQL connection errors
+### MySQL connection or bootstrap errors
 
 Check:
 
 - MySQL is running
-- the `.env` values match your local database server
-- the configured user has permission to create/use the required databases
+- `.env` values match your local database server
+- the configured user has permission to create and use the required databases
+- the service-specific `DB_NAME` values point to the intended schema
+
+### Gateway route falls back unexpectedly
+
+Check:
+
+- `LEGACY_BACKEND_URL` is set correctly in `microservices/api_gateway/.env`
+- the route you expect is actually mapped in `microservices/api_gateway/src/routes.py`
+- the target microservice is running and healthy
 
 ## Recommended Reading Order
 
-If you are new to this repository, read in this order:
+If you are new to the repository, read in this order:
 
 1. this `README.md`
 2. `scripts/start-dev.js`

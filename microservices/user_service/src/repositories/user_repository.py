@@ -16,7 +16,7 @@ class UserRepository:
                 height_cm,
                 weight_kg,
                 activity_level
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 payload["full_name"],
