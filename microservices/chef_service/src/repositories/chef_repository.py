@@ -114,6 +114,11 @@ class ChefRepository:
 
     def list_public_profiles(self, connection, filters):
         where_clause, params = self._build_public_profile_where_clause(filters)
+        order_clause = (
+            "cp.updated_at DESC, cp.id DESC"
+            if filters.get("sort") == "recent"
+            else "COALESCE(crs.average_rating, 0) DESC, cp.updated_at DESC, cp.id DESC"
+        )
         cursor = connection.cursor(dictionary=True)
         cursor.execute(
             f"""
@@ -122,7 +127,7 @@ class ChefRepository:
             FROM chef_profiles cp
             LEFT JOIN chef_rating_summary crs ON crs.chef_id = cp.id
             WHERE {where_clause}
-            ORDER BY COALESCE(crs.average_rating, 0) DESC, cp.updated_at DESC, cp.id DESC
+            ORDER BY {order_clause}
             LIMIT %s OFFSET %s
             """,
             tuple(params + [filters["limit"], filters["offset"]]),

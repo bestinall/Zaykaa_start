@@ -92,6 +92,45 @@ class UserRepository:
         )
         return cursor.fetchone()
 
+    def list_public_users(self, connection, filters):
+        placeholders = ", ".join(["%s"] * len(filters["roles"]))
+        query = f"""
+            SELECT
+                id,
+                full_name,
+                role,
+                native_state,
+                native_region,
+                created_at,
+                updated_at,
+                last_login_at
+            FROM users
+            WHERE role IN ({placeholders})
+        """
+        params = list(filters["roles"])
+
+        if filters.get("q"):
+            query += """
+                AND (
+                    full_name LIKE %s
+                    OR native_state LIKE %s
+                    OR native_region LIKE %s
+                )
+            """
+            params.extend([f"%{filters['q']}%"] * 3)
+
+        if filters.get("sort") == "name":
+            query += " ORDER BY full_name ASC, id ASC"
+        else:
+            query += " ORDER BY created_at DESC, id DESC"
+
+        query += " LIMIT %s OFFSET %s"
+        params.extend([filters["limit"], filters["offset"]])
+
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query, tuple(params))
+        return cursor.fetchall()
+
     def update_last_login(self, connection, user_id):
         cursor = connection.cursor()
         cursor.execute(

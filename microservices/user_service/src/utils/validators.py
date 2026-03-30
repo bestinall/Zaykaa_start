@@ -6,6 +6,7 @@ from src.utils.exceptions import ValidationError
 
 EMAIL_REGEX = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 VALID_ROLES = {"user", "chef", "seller", "agent", "vlogger", "admin"}
+PUBLIC_DIRECTORY_ALLOWED_ROLES = ("seller", "agent", "vlogger")
 VALID_GENDERS = {"male", "female", "other", "prefer_not_to_say"}
 VALID_ACTIVITY_LEVELS = {"low", "moderate", "high"}
 VALID_SPICE_LEVELS = {"mild", "medium", "hot"}
@@ -13,6 +14,7 @@ VALID_BUDGETS = {"economy", "standard", "premium"}
 VALID_MEAL_COMPLEXITY = {"simple", "balanced", "advanced"}
 VALID_MEAL_TYPES = {"breakfast", "lunch", "dinner", "snack", "water"}
 VALID_MEAL_PLAN_STATUS = {"draft", "active", "archived"}
+VALID_DIRECTORY_SORTS = {"recent", "name"}
 
 
 def require_fields(payload, required_fields):
@@ -49,9 +51,62 @@ def parse_time(value, field_name):
         raise ValidationError(f"{field_name} must be in HH:MM:SS format") from exc
 
 
+def parse_int(value, field_name, minimum=None, maximum=None):
+    if value in (None, ""):
+        return None
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError(f"{field_name} must be an integer") from exc
+    if minimum is not None and parsed < minimum:
+        raise ValidationError(f"{field_name} must be at least {minimum}")
+    if maximum is not None and parsed > maximum:
+        raise ValidationError(f"{field_name} must be at most {maximum}")
+    return parsed
+
+
 def validate_role(role):
     if role not in VALID_ROLES:
         raise ValidationError("Role is invalid", {"allowed_roles": sorted(VALID_ROLES)})
+
+
+def validate_public_directory_filters(args):
+    requested_roles = []
+    if hasattr(args, "getlist"):
+        requested_roles.extend(args.getlist("role"))
+    if args.get("roles"):
+        requested_roles.extend(str(args.get("roles")).split(","))
+
+    normalized_roles = []
+    for role in requested_roles or PUBLIC_DIRECTORY_ALLOWED_ROLES:
+        normalized_role = str(role).strip().lower()
+        if not normalized_role:
+            continue
+        if normalized_role not in PUBLIC_DIRECTORY_ALLOWED_ROLES:
+            raise ValidationError(
+                "role filter is invalid",
+                {"allowed_roles": list(PUBLIC_DIRECTORY_ALLOWED_ROLES)},
+            )
+        if normalized_role not in normalized_roles:
+            normalized_roles.append(normalized_role)
+
+    if not normalized_roles:
+        normalized_roles = list(PUBLIC_DIRECTORY_ALLOWED_ROLES)
+
+    sort = str(args.get("sort", "recent")).strip().lower()
+    if sort not in VALID_DIRECTORY_SORTS:
+        raise ValidationError(
+            "sort is invalid",
+            {"allowed_values": sorted(VALID_DIRECTORY_SORTS)},
+        )
+
+    return {
+        "roles": normalized_roles,
+        "q": str(args.get("q", "")).strip() or None,
+        "limit": parse_int(args.get("limit", 12), "limit", minimum=1, maximum=50),
+        "offset": parse_int(args.get("offset", 0), "offset", minimum=0),
+        "sort": sort,
+    }
 
 
 def validate_profile_payload(payload):

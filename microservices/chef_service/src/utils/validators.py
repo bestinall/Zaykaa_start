@@ -8,6 +8,8 @@ VALID_SLOT_NAMES = {"breakfast", "lunch", "dinner", "custom"}
 VALID_AVAILABILITY_STATUSES = {"open", "blocked", "reserved"}
 VALID_DIFFICULTIES = {"easy", "medium", "hard"}
 VALID_VERIFICATION_STATUSES = {"pending", "verified", "rejected"}
+VALID_CHEF_SORTS = {"recommended", "recent"}
+VALID_RECIPE_SORTS = {"popular", "recent"}
 DEFAULT_SLOT_WINDOWS = {
     "breakfast": ("07:00:00", "10:00:00"),
     "lunch": ("12:00:00", "14:00:00"),
@@ -472,6 +474,13 @@ def validate_chef_filters(args):
         minimum=0,
     )
     verified_only = parse_bool(args.get("verified_only", False), "verified_only") or False
+    sort = _clean_string(args.get("sort")) or "recommended"
+    sort = sort.lower()
+    if sort not in VALID_CHEF_SORTS:
+        raise ValidationError(
+            "sort is invalid",
+            {"allowed_values": sorted(VALID_CHEF_SORTS)},
+        )
     return {
         "limit": limit,
         "offset": offset,
@@ -482,6 +491,7 @@ def validate_chef_filters(args):
         "min_rating": min_rating,
         "max_hourly_rate": max_hourly_rate,
         "verified_only": verified_only,
+        "sort": sort,
     }
 
 
@@ -506,6 +516,13 @@ def validate_availability_query(args):
 
 
 def validate_recipe_filters(args):
+    sort = _clean_string(args.get("sort")) or "popular"
+    sort = sort.lower()
+    if sort not in VALID_RECIPE_SORTS:
+        raise ValidationError(
+            "sort is invalid",
+            {"allowed_values": sorted(VALID_RECIPE_SORTS)},
+        )
     return {
         "limit": parse_int(args.get("limit", 20), "limit", minimum=1, maximum=50),
         "offset": parse_int(args.get("offset", 0), "offset", minimum=0),
@@ -514,6 +531,7 @@ def validate_recipe_filters(args):
         "state": _clean_string(args.get("state") or args.get("origin_state")),
         "region": _clean_string(args.get("region") or args.get("origin_region")),
         "q": _clean_string(args.get("q")),
+        "sort": sort,
     }
 
 

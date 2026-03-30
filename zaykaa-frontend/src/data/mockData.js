@@ -112,6 +112,45 @@ export const previewChefs = [
   },
 ];
 
+export const previewCommunityMembers = [
+  {
+    id: 'member-1',
+    name: 'Asha Regional Kitchen',
+    role: 'seller',
+    nativeState: 'Rajasthan',
+    nativeRegion: 'Jaipur',
+    locationLabel: 'Jaipur, Rajasthan',
+    joinedAt: '2026-03-29T09:15:00Z',
+  },
+  {
+    id: 'member-2',
+    name: 'Rahul Verma',
+    role: 'agent',
+    nativeState: 'Delhi',
+    nativeRegion: 'South Delhi',
+    locationLabel: 'South Delhi, Delhi',
+    joinedAt: '2026-03-28T11:40:00Z',
+  },
+  {
+    id: 'member-3',
+    name: 'Naina Food Trails',
+    role: 'vlogger',
+    nativeState: 'Maharashtra',
+    nativeRegion: 'Mumbai',
+    locationLabel: 'Mumbai, Maharashtra',
+    joinedAt: '2026-03-27T18:20:00Z',
+  },
+  {
+    id: 'member-4',
+    name: 'Coastal Spice Stories',
+    role: 'seller',
+    nativeState: 'Goa',
+    nativeRegion: 'Panaji',
+    locationLabel: 'Panaji, Goa',
+    joinedAt: '2026-03-26T14:05:00Z',
+  },
+];
+
 export const previewRestaurants = [
   {
     id: 'rest-1',

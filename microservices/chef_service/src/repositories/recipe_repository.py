@@ -212,6 +212,11 @@ class RecipeRepository:
         return cursor.fetchall()
 
     def list_public_recipes(self, connection, filters):
+        order_clause = (
+            "r.created_at DESC, r.id DESC"
+            if filters.get("sort") == "recent"
+            else "r.views_count DESC, r.created_at DESC, r.id DESC"
+        )
         query = f"""
             SELECT
                 {self.RECIPE_COLUMNS}
@@ -247,7 +252,7 @@ class RecipeRepository:
                 )
             """
             params.extend([f"%{filters['q']}%"] * 5)
-        query += " ORDER BY r.views_count DESC, r.created_at DESC, r.id DESC LIMIT %s OFFSET %s"
+        query += f" ORDER BY {order_clause} LIMIT %s OFFSET %s"
         params.extend([filters["limit"], filters["offset"]])
 
         cursor = connection.cursor(dictionary=True)

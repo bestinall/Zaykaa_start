@@ -20,6 +20,7 @@ proxy_service = ProxyService()
 PUBLIC_USER_ROUTES = {
     ("/api/v1/users/auth/register", "POST"),
     ("/api/v1/users/auth/login", "POST"),
+    ("/api/v1/users/directory", "GET"),
 }
 
 

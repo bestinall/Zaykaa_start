@@ -1,7 +1,11 @@
 from src.database.connection import DatabasePoolManager
 from src.repositories.user_repository import UserRepository
 from src.utils.exceptions import NotFoundError
-from src.utils.validators import validate_preferences_payload, validate_profile_payload
+from src.utils.validators import (
+    validate_preferences_payload,
+    validate_profile_payload,
+    validate_public_directory_filters,
+)
 
 
 class ProfileService:
@@ -22,6 +26,23 @@ class ProfileService:
             if not user:
                 raise NotFoundError("User account was not found")
             return user
+        finally:
+            connection.close()
+
+    def list_public_directory(self, args):
+        filters = validate_public_directory_filters(args)
+        connection = DatabasePoolManager.get_connection()
+        try:
+            users = self.user_repository.list_public_users(connection, filters)
+            return {
+                "members": [self._format_public_member(user) for user in users],
+                "pagination": {
+                    "limit": filters["limit"],
+                    "offset": filters["offset"],
+                    "count": len(users),
+                },
+                "roles": filters["roles"],
+            }
         finally:
             connection.close()
 
@@ -123,4 +144,19 @@ class ProfileService:
                 "meal_complexity": preferences.get("meal_complexity"),
             },
             "tags": grouped_tags,
+        }
+
+    def _format_public_member(self, user):
+        location_parts = [user.get("native_region"), user.get("native_state")]
+        return {
+            "id": user["id"],
+            "name": user["full_name"],
+            "fullName": user["full_name"],
+            "role": user["role"],
+            "nativeState": user.get("native_state"),
+            "nativeRegion": user.get("native_region"),
+            "locationLabel": ", ".join([part for part in location_parts if part]) or None,
+            "joinedAt": user.get("created_at"),
+            "updatedAt": user.get("updated_at"),
+            "lastSeenAt": user.get("last_login_at"),
         }

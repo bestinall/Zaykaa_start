@@ -9,6 +9,12 @@ profile_blueprint = Blueprint("user_profile", __name__, url_prefix="/api/v1/user
 profile_service = ProfileService()
 
 
+@profile_blueprint.get("/directory")
+def get_public_directory():
+    result = profile_service.list_public_directory(request.args)
+    return success_response(result, "Public member directory fetched successfully")
+
+
 @profile_blueprint.get("/profile")
 @auth_required
 def get_profile():
