@@ -5,6 +5,18 @@ import Button from '../ui/Button';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency, formatDate, humanize } from '../../utils/display';
 
+const Icon = ({ path, className = 'h-4 w-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    {path}
+  </svg>
+);
+
+const icons = {
+  filter: <><polygon points="22 3 2 3 7 10 10 12 46 22 3" /></>,
+  check: <path d="M20 6 9 17l-5-5" />,
+  x: <path d="M18 6 6 18" />,
+};
+
 const timeSlotLabel = {
   breakfast: 'Breakfast',
   lunch: 'Lunch',
@@ -50,27 +62,33 @@ const BookingsList = ({ bookings, onRefresh, previewMode }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap gap-3">
-        {['all', 'pending', 'confirmed', 'completed'].map((status) => (
-          <button
-            key={status}
-            type="button"
-            onClick={() => setFilter(status)}
-            className={`rounded-full px-4 py-2.5 text-sm font-medium transition ${
-              filter === status
-                ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950'
-                : 'border border-white/60 bg-white/80 text-slate-700 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-200'
-            }`}
-          >
-            {status === 'all' ? `All (${bookings.length})` : humanize(status)}
-          </button>
-        ))}
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {['all', 'pending', 'confirmed', 'completed'].map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setFilter(status)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                filter === status
+                  ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950'
+                  : 'border border-white/60 bg-white/80 text-slate-700 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-200'
+              }`}
+            >
+              {status === 'all' ? `All (${bookings.length})` : humanize(status)}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <Icon path={icons.filter} className="h-3.5 w-3.5" />
+          {filteredBookings.length} bookings
+        </div>
       </div>
 
       {previewMode && (
-        <div className="rounded-[1.5rem] border border-brand/20 bg-brand/10 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
-          Showing sample bookings while live chef bookings are unavailable.
+        <div className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-1.5 text-xs font-medium text-brand">
+          Sample bookings
         </div>
       )}
 
@@ -78,14 +96,14 @@ const BookingsList = ({ bookings, onRefresh, previewMode }) => {
         <div className="overflow-x-auto">
           <table className="min-w-full text-left">
             <thead className="bg-slate-900/5 dark:bg-white/5">
-              <tr className="text-sm text-slate-500 dark:text-slate-400">
-                <th className="px-6 py-4 font-medium">Guest</th>
-                <th className="px-6 py-4 font-medium">Date</th>
-                <th className="px-6 py-4 font-medium">Session</th>
-                <th className="px-6 py-4 font-medium">Guests</th>
-                <th className="px-6 py-4 font-medium">Amount</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium text-right">Actions</th>
+              <tr className="text-[10px] text-slate-500 dark:text-slate-400">
+                <th className="px-3 py-2 font-medium">Guest</th>
+                <th className="px-3 py-2 font-medium">Date</th>
+                <th className="px-3 py-2 font-medium">Time</th>
+                <th className="px-3 py-2 font-medium">Guests</th>
+                <th className="px-3 py-2 font-medium">Amount</th>
+                <th className="px-3 py-2 font-medium">Status</th>
+                <th className="px-3 py-2 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -101,31 +119,29 @@ const BookingsList = ({ bookings, onRefresh, previewMode }) => {
                 return (
                   <tr
                     key={bookingId}
-                    className="border-t border-black/5 text-sm text-slate-700 dark:border-white/10 dark:text-slate-200"
+                    className="border-t border-black/5 text-xs text-slate-700 dark:border-white/10 dark:text-slate-200"
                   >
-                    <td className="px-6 py-5">
-                      <div>
-                        <p className="font-semibold text-slate-950 dark:text-white">{name}</p>
-                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                          {booking.menuPreferences || 'Custom menu discussion'}
-                        </p>
-                      </div>
+                    <td className="px-3 py-3">
+                      <p className="font-medium text-slate-950 dark:text-white truncate max-w-[120px]">{name}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                        {booking.menuPreferences || 'Custom menu'}
+                      </p>
                     </td>
-                    <td className="px-6 py-5">{formatDate(booking.date)}</td>
-                    <td className="px-6 py-5">{timeSlot}</td>
-                    <td className="px-6 py-5">{guests}</td>
-                    <td className="px-6 py-5 font-semibold text-slate-950 dark:text-white">
+                    <td className="px-3 py-3">{formatDate(booking.date)}</td>
+                    <td className="px-3 py-3">{timeSlot}</td>
+                    <td className="px-3 py-3">{guests}</td>
+                    <td className="px-3 py-3 font-medium text-slate-950 dark:text-white">
                       {formatCurrency(amount)}
                     </td>
-                    <td className="px-6 py-5">
+                    <td className="px-3 py-3">
                       <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusTone[booking.status] || 'bg-slate-500/10 text-slate-700 dark:text-slate-200'}`}
+                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusTone[booking.status] || 'bg-slate-500/10 text-slate-700 dark:text-slate-200'}`}
                       >
                         {humanize(booking.status || 'pending')}
                       </span>
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="flex justify-end gap-2">
+                    <td className="px-3 py-3">
+                      <div className="flex justify-end gap-1">
                         {booking.status === 'pending' && (
                           <>
                             <Button
@@ -141,7 +157,7 @@ const BookingsList = ({ bookings, onRefresh, previewMode }) => {
                               onClick={() => handleStatusUpdate(bookingId, 'cancelled')}
                               disabled={loadingId === bookingId}
                             >
-                              Decline
+                              <Icon path={icons.x} className="h-3 w-3" />
                             </Button>
                           </>
                         )}
