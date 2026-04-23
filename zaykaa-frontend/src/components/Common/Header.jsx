@@ -53,7 +53,7 @@ const Header = () => {
     >
       <div className="mx-auto max-w-7xl">
         <div className="glass-panel rounded-[2rem] border border-white/60 bg-white/80 px-4 py-3 shadow-soft backdrop-blur-2xl dark:border-white/10 dark:bg-[#111115]/80 sm:px-5">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-4">
             <Link to="/dashboard" className="flex min-w-0 items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand via-orange-500 to-red-500 text-lg font-bold text-white shadow-glow">
                 Z
@@ -68,7 +68,7 @@ const Header = () => {
               </div>
             </Link>
 
-            <nav className="hidden items-center gap-1 lg:flex">
+            <nav className="hidden items-center gap-2 lg:flex">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -86,21 +86,25 @@ const Header = () => {
               ))}
             </nav>
 
-            <div className="hidden items-center gap-3 md:flex">
+            <div className="hidden items-center gap-4 md:flex">
               <ThemeToggle />
-              <div className="rounded-full border border-white/60 bg-white/80 px-4 py-2 text-right shadow-soft dark:border-white/10 dark:bg-white/10">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                  {user?.name || 'Guest'}
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {humanize(user?.role || 'member')}
-                  {isDark ? ' mode' : ' experience'}
-                </p>
+              <div className="flex items-center gap-2 rounded-full border border-white/60 bg-white/80 px-3 py-1.5 shadow-soft dark:border-white/10 dark:bg-white/5">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-brand text-xs font-semibold">
+                  {user?.name?.charAt(0).toUpperCase() || 'G'}
+                </span>
+                <div className="flex flex-col items-start">
+                  <p className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">
+                    {user?.name || 'Guest'}
+                  </p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                    {humanize(user?.role || 'member')}
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={handleLogout}
-                className={buttonStyles({ variant: 'secondary', size: 'sm' })}
+                className="rounded-full border border-white/60 bg-white/80 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900 transition dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 Sign out
               </button>
@@ -131,16 +135,27 @@ const Header = () => {
                 className="overflow-hidden md:hidden"
               >
                 <div className="mt-4 space-y-3 border-t border-black/5 pt-4 dark:border-white/10">
-                  <div className="flex items-center justify-between gap-3">
-                    <ThemeToggle className="flex-1 justify-center" />
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className={buttonStyles({ variant: 'secondary', size: 'sm' })}
-                    >
-                      Sign out
-                    </button>
+                  <div className="flex items-center gap-2 rounded-full border border-white/60 bg-white/80 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-brand text-xs font-semibold">
+                      {user?.name?.charAt(0).toUpperCase() || 'G'}
+                    </span>
+                    <div className="flex flex-col items-start">
+                      <p className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">
+                        {user?.name || 'Guest'}
+                      </p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                        {humanize(user?.role || 'member')}
+                      </p>
+                    </div>
+                    <ThemeToggle className="ml-auto" />
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full rounded-full border border-white/60 bg-white/80 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900 transition dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                  >
+                    Sign out
+                  </button>
                   <div className="grid gap-2">
                     {navItems.map((item) => (
                       <NavLink

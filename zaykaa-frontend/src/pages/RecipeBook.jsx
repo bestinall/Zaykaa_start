@@ -18,7 +18,26 @@ const ALL_CATEGORIES = 'All';
 const ALL_STATES = 'All states';
 const ALL_REGIONS = 'All regions';
 const textareaClass =
-  'min-h-[120px] w-full rounded-[1.5rem] border border-white/60 bg-white/80 px-4 py-4 text-sm text-slate-900 shadow-soft outline-none transition placeholder:text-slate-400 focus:border-brand/50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500';
+  'min-h-[100px] w-full rounded-[1.2rem] border border-white/60 bg-white/80 px-3 py-3 text-sm text-slate-900 shadow-soft outline-none transition placeholder:text-slate-400 focus:border-brand/50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500';
+
+const Icon = ({ path, className = 'h-4 w-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    {path}
+  </svg>
+);
+
+const icons = {
+  book: <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />,
+  search: <><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></>,
+  sparkle: <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />,
+  clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+  mapPin: <><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></>,
+  tag: <><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><path d="M7 7h.01" /></>,
+  trash: <><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></>,
+  edit: <><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></>,
+  eye: <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />,
+  check: <path d="M20 6 9 17l-5-5" />,
+};
 
 const createEmptyRecipeForm = () => ({
   title: '',
@@ -97,57 +116,60 @@ const buildRecipePayload = (formData) => {
 };
 
 const RecipeCard = ({ recipe, onView, action }) => (
-  <Card hover={false} className="overflow-hidden p-0">
-    <div className="relative h-48">
+  <Card hover={false} padded={false} className="overflow-hidden">
+    <div className="relative h-32">
       {recipe.image ? (
         <SmartImage src={recipe.image} alt={recipe.title} className="h-full w-full" />
       ) : (
         <div className="h-full w-full bg-gradient-to-br from-orange-200 via-amber-100 to-rose-200 dark:from-orange-500/20 dark:via-amber-500/10 dark:to-rose-500/20" />
       )}
-      <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
-        <span className="rounded-full bg-white/85 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-900 backdrop-blur">
+      <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
+        <span className="rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-900 backdrop-blur">
           {recipe.category}
         </span>
-        <span className="rounded-full bg-slate-950/75 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+        <span className="rounded-full bg-slate-950/75 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
           {humanize(recipe.authorRole || 'chef')}
         </span>
       </div>
     </div>
-    <div className="space-y-5 p-5">
+    <div className="space-y-3 p-4">
       <div>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{recipe.authorName}</p>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{getOriginLabel(recipe)}</p>
-        <h3 className="mt-2 font-display text-3xl text-slate-950 dark:text-white">{recipe.title}</h3>
-        <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{recipe.description}</p>
+        <p className="text-[10px] text-slate-500 dark:text-slate-400">
+          <span className="font-medium">{recipe.authorName}</span>
+          {recipe.originState && <span> • {recipe.originState}</span>}
+        </p>
+        <h3 className="mt-1 font-display text-base font-semibold text-slate-950 dark:text-white line-clamp-1">{recipe.title}</h3>
+        <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300 line-clamp-2">{recipe.description}</p>
         {recipe.authenticityTag ? (
-          <div className="mt-4 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
+          <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
+            <Icon path={icons.check} className="h-2.5 w-2.5" />
             {recipe.authenticityTag}
           </div>
         ) : null}
       </div>
-      <div className="grid grid-cols-2 gap-3 text-sm xl:grid-cols-4">
-        <div className="rounded-[1.25rem] bg-slate-900/5 px-3 py-3 dark:bg-white/5">
+      <div className="grid grid-cols-4 gap-2 text-[10px]">
+        <div className="rounded-lg bg-slate-900/5 px-2 py-1.5 dark:bg-white/5">
           <p className="text-slate-500 dark:text-slate-400">Time</p>
-          <p className="mt-1 font-semibold text-slate-950 dark:text-white">{recipe.cookingTimeMinutes || 0} mins</p>
+          <p className="mt-0.5 font-semibold text-slate-950 dark:text-white">{recipe.cookingTimeMinutes || 0}m</p>
         </div>
-        <div className="rounded-[1.25rem] bg-slate-900/5 px-3 py-3 dark:bg-white/5">
-          <p className="text-slate-500 dark:text-slate-400">Servings</p>
-          <p className="mt-1 font-semibold text-slate-950 dark:text-white">{recipe.servings}</p>
+        <div className="rounded-lg bg-slate-900/5 px-2 py-1.5 dark:bg-white/5">
+          <p className="text-slate-500 dark:text-slate-400">Serves</p>
+          <p className="mt-0.5 font-semibold text-slate-950 dark:text-white">{recipe.servings}</p>
         </div>
-        <div className="rounded-[1.25rem] bg-slate-900/5 px-3 py-3 dark:bg-white/5">
+        <div className="rounded-lg bg-slate-900/5 px-2 py-1.5 dark:bg-white/5">
           <p className="text-slate-500 dark:text-slate-400">State</p>
-          <p className="mt-1 font-semibold text-slate-950 dark:text-white">{recipe.originState || 'Linked'}</p>
+          <p className="mt-0.5 font-semibold text-slate-950 dark:text-white line-clamp-1">{recipe.originState || '—'}</p>
         </div>
-        <div className="rounded-[1.25rem] bg-slate-900/5 px-3 py-3 dark:bg-white/5">
+        <div className="rounded-lg bg-slate-900/5 px-2 py-1.5 dark:bg-white/5">
           <p className="text-slate-500 dark:text-slate-400">{recipe.price !== null ? 'Price' : 'Views'}</p>
-          <p className="mt-1 font-semibold text-slate-950 dark:text-white">
+          <p className="mt-0.5 font-semibold text-slate-950 dark:text-white">
             {recipe.price !== null ? formatCurrency(recipe.price) : recipe.views || 0}
           </p>
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button type="button" variant="secondary" onClick={() => onView(recipe)}>
-          View dish
+      <div className="flex items-center justify-between gap-2">
+        <Button size="sm" variant="secondary" onClick={() => onView(recipe)}>
+          View
         </Button>
         {action}
       </div>
@@ -210,8 +232,27 @@ const RecipeBook = () => {
         if (!active) {
           return;
         }
-        setPublicRecipes(response.recipes || []);
+        const recipes = response.recipes || [];
+        setPublicRecipes(recipes);
         setPublicPreviewMode(false);
+
+        // FIX: If API returns empty array, show preview data
+        if (recipes.length === 0) {
+          const filteredPreview = previewRecipes.filter((recipe) => {
+            const matchesSearch =
+              !deferredSearch.trim() ||
+              recipe.title.toLowerCase().includes(deferredSearch.trim().toLowerCase());
+            const matchesCategory =
+              selectedCategory === ALL_CATEGORIES || recipe.category === selectedCategory;
+            const matchesState =
+              selectedState === ALL_STATES || recipe.originState === selectedState;
+            const matchesRegion =
+              selectedRegion === ALL_REGIONS || recipe.originRegion === selectedRegion;
+            return matchesSearch && matchesCategory && matchesState && matchesRegion;
+          });
+          setPublicRecipes(filteredPreview);
+          setPublicPreviewMode(true);
+        }
       } catch (error) {
         if (!active) {
           return;
@@ -313,8 +354,27 @@ const RecipeBook = () => {
       state: selectedState !== ALL_STATES ? selectedState : undefined,
       region: selectedRegion !== ALL_REGIONS ? selectedRegion : undefined,
     });
-    setPublicRecipes(response.recipes || []);
+    const recipes = response.recipes || [];
+    setPublicRecipes(recipes);
     setPublicPreviewMode(false);
+
+    // Also apply preview fallback if empty
+    if (recipes.length === 0) {
+      const filteredPreview = previewRecipes.filter((recipe) => {
+        const matchesSearch =
+          !deferredSearch.trim() ||
+          recipe.title.toLowerCase().includes(deferredSearch.trim().toLowerCase());
+        const matchesCategory =
+          selectedCategory === ALL_CATEGORIES || recipe.category === selectedCategory;
+        const matchesState =
+          selectedState === ALL_STATES || recipe.originState === selectedState;
+        const matchesRegion =
+          selectedRegion === ALL_REGIONS || recipe.originRegion === selectedRegion;
+        return matchesSearch && matchesCategory && matchesState && matchesRegion;
+      });
+      setPublicRecipes(filteredPreview);
+      setPublicPreviewMode(true);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -368,54 +428,61 @@ const RecipeBook = () => {
   return (
     <PageTransition className="app-shell">
       <Header />
-      <div className="content-shell space-y-8">
+      <div className="content-shell space-y-4">
         <Card hover={false} className="overflow-hidden p-0">
-          <div className="grid gap-6 bg-hero-wash p-8 dark:bg-hero-wash-dark lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
+          <div className="grid gap-4 bg-hero-wash p-5 dark:bg-hero-wash-dark sm:grid-cols-[1fr_0.5fr] sm:p-6">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand">Recipe book</p>
-              <h1 className="mt-4 max-w-3xl font-display text-5xl leading-tight text-slate-950 dark:text-white">
-                Discover regional dishes from chefs and sellers, complete with authentic preparation details.
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-brand shadow-soft backdrop-blur dark:border-white/10 dark:bg-white/5">
+                <span className="inline-block h-1.5 w-1.5 animate-pulseSoft rounded-full bg-brand" />
+                Recipe book
+              </div>
+              <h1 className="mt-3 font-display text-xl leading-tight text-slate-950 dark:text-white sm:text-2xl">
+                Discover regional dishes from chefs and sellers
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300">
-                Browse food stories by state, category, and contributor. Every published dish carries
-                ingredients, step-by-step preparation, and a region linked to the creator profile.
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300 line-clamp-2">
+                Browse food stories by state, category, and contributor. Every dish carries ingredients, steps, and regional origin.
               </p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-[1.75rem] border border-white/60 bg-white/70 p-5 dark:border-white/10 dark:bg-white/5">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Recipes visible</p>
-                <p className="mt-3 text-3xl font-semibold text-slate-950 dark:text-white">{publicRecipes.length}</p>
-              </div>
-              <div className="rounded-[1.75rem] border border-white/60 bg-white/70 p-5 dark:border-white/10 dark:bg-white/5">
-                <p className="text-sm text-slate-500 dark:text-slate-400">States featured</p>
-                <p className="mt-3 text-3xl font-semibold text-slate-950 dark:text-white">{stateOptions.length - 1}</p>
-              </div>
-              <div className="rounded-[1.75rem] border border-white/60 bg-white/70 p-5 dark:border-white/10 dark:bg-white/5">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Contributor access</p>
-                <p className="mt-3 text-3xl font-semibold text-slate-950 dark:text-white">
-                  {canManage ? 'Enabled' : 'Browse'}
-                </p>
-              </div>
+            <div className="grid grid-cols-2 gap-2 sm:content-center">
+              {[
+                { label: 'Recipes', value: String(publicRecipes.length), icon: icons.book },
+                { label: 'States', value: String(stateOptions.length - 1), icon: icons.mapPin },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-xl border border-white/60 bg-white/70 p-3 shadow-soft dark:border-white/10 dark:bg-white/5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand/10 text-brand">
+                      <Icon path={stat.icon} className="h-3 w-3" />
+                    </span>
+                  </div>
+                  <p className="mt-2 text-[10px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    {stat.label}
+                  </p>
+                  <p className="text-base font-semibold text-slate-950 dark:text-white">{stat.value}</p>
+                </div>
+              ))}
             </div>
           </div>
         </Card>
 
         <Card hover={false}>
           <SectionHeader
-            eyebrow="Explore regional dishes"
-            title="Search food by name, category, and origin"
-            description="Public dishes from chefs and food sellers are grouped here so every visitor can explore authentic preparation details."
+            eyebrow="Explore dishes"
+            title="Search by name, category, and origin"
+            description="Public recipes from chefs and sellers with full preparation details."
           />
-          <div className="mt-8 grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
+          <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto_auto]">
             <FloatingInput
-              label="Search dishes by name"
+              label="Search dishes"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
             />
             <select
               value={selectedCategory}
               onChange={(event) => setSelectedCategory(event.target.value)}
-              className="rounded-[1.5rem] border border-white/60 bg-white/80 px-4 py-4 text-sm text-slate-900 shadow-soft outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
+              className="rounded-[1.2rem] border border-white/60 bg-white/80 px-3 py-2.5 text-sm text-slate-900 shadow-soft outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
             >
               {categoryOptions.map((category) => (
                 <option key={category} value={category}>
@@ -429,7 +496,7 @@ const RecipeBook = () => {
                 setSelectedState(event.target.value);
                 setSelectedRegion(ALL_REGIONS);
               }}
-              className="rounded-[1.5rem] border border-white/60 bg-white/80 px-4 py-4 text-sm text-slate-900 shadow-soft outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
+              className="rounded-[1.2rem] border border-white/60 bg-white/80 px-3 py-2.5 text-sm text-slate-900 shadow-soft outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
             >
               {stateOptions.map((state) => (
                 <option key={state} value={state}>
@@ -440,7 +507,7 @@ const RecipeBook = () => {
             <select
               value={selectedRegion}
               onChange={(event) => setSelectedRegion(event.target.value)}
-              className="rounded-[1.5rem] border border-white/60 bg-white/80 px-4 py-4 text-sm text-slate-900 shadow-soft outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
+              className="rounded-[1.2rem] border border-white/60 bg-white/80 px-3 py-2.5 text-sm text-slate-900 shadow-soft outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
             >
               {regionOptions.map((region) => (
                 <option key={region} value={region}>
@@ -450,11 +517,12 @@ const RecipeBook = () => {
             </select>
           </div>
           {publicPreviewMode && (
-            <div className="mt-6 rounded-[1.5rem] border border-brand/20 bg-brand/10 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
-              Showing sample regional dishes because the live feed is unavailable right now.
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-1.5 text-xs font-medium text-brand">
+              <Icon path={icons.sparkle} className="h-3 w-3" />
+              Showing sample dishes
             </div>
           )}
-          <div className="mt-8 grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {publicLoading ? (
               <p className="text-sm text-slate-500 dark:text-slate-400">Loading recipes...</p>
             ) : publicRecipes.length > 0 ? (
@@ -463,7 +531,7 @@ const RecipeBook = () => {
               ))
             ) : (
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                No dishes matched your current search, category, state, or region filters.
+                No dishes matched your filters. Try broader options.
               </p>
             )}
           </div>
@@ -472,19 +540,22 @@ const RecipeBook = () => {
         {canManage && (
           <Card hover={false}>
             <SectionHeader
-              eyebrow="Contributor studio"
-              title="Manage your regional dishes"
-              description="Chefs and sellers can publish, edit, or remove dishes while keeping preparation details tied to their regional identity."
+              eyebrow="Your dishes"
+              title="Manage your published recipes"
+              description="Create, edit, or remove dishes. Origin is linked from your profile."
               action={
-                <Button type="button" onClick={openCreateModal}>
-                  Add regional dish
+                <Button size="sm" onClick={openCreateModal}>
+                  Add dish
                 </Button>
               }
             />
-            <div className="mt-6 rounded-[1.5rem] border border-brand/20 bg-brand/10 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
-              Origin is linked automatically from your contributor profile{profileOrigin ? `: ${profileOrigin}.` : '.'}
-            </div>
-            <div className="mt-8 grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+            {profileOrigin && (
+              <div className="mt-3 inline-flex items-center gap-1 rounded-full border border-white/60 bg-white/70 px-3 py-1.5 text-xs text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+                <Icon path={icons.mapPin} className="h-3 w-3" />
+                Origin: {profileOrigin}
+              </div>
+            )}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {manageLoading ? (
                 <p className="text-sm text-slate-500 dark:text-slate-400">Loading your dishes...</p>
               ) : myRecipes.length > 0 ? (
@@ -494,12 +565,12 @@ const RecipeBook = () => {
                     recipe={recipe}
                     onView={setSelectedRecipe}
                     action={
-                      <div className="flex items-center gap-2">
-                        <Button type="button" variant="ghost" onClick={() => openEditModal(recipe)}>
-                          Edit
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => openEditModal(recipe)}>
+                          <Icon path={icons.edit} className="h-3.5 w-3.5" />
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => handleDelete(recipe)}>
-                          Delete
+                        <Button size="sm" variant="secondary" onClick={() => handleDelete(recipe)}>
+                          <Icon path={icons.trash} className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     }
@@ -507,7 +578,7 @@ const RecipeBook = () => {
                 ))
               ) : (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  You have not published a regional dish yet. Start with one of your signature specialties.
+                  You haven't published any dishes yet.
                 </p>
               )}
             </div>
@@ -518,15 +589,11 @@ const RecipeBook = () => {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingRecipeId ? 'Edit regional dish' : 'Add a new regional dish'}
-        description="Capture the dish, ingredient list, and full traditional cooking method so others can learn how it is made."
+        title={editingRecipeId ? 'Edit dish' : 'Add new dish'}
+        description="Capture ingredients and cooking method so others can learn."
         size="lg"
       >
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="rounded-[1.5rem] border border-brand/20 bg-brand/10 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
-            Your dish origin will be linked from your profile to preserve regional authenticity
-            {profileOrigin ? `: ${profileOrigin}.` : '.'}
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <FloatingInput
             label="Dish title"
             value={formData.title}
@@ -536,15 +603,15 @@ const RecipeBook = () => {
           <textarea
             value={formData.description}
             onChange={(event) => setFormData((current) => ({ ...current, description: event.target.value }))}
-            placeholder="Describe the dish and what makes the preparation regionally special."
+            placeholder="Describe the dish and what makes it regionally special."
             className={textareaClass}
             required
           />
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <select
               value={formData.category}
               onChange={(event) => setFormData((current) => ({ ...current, category: event.target.value }))}
-              className="rounded-[1.5rem] border border-white/60 bg-white/80 px-4 py-4 text-sm text-slate-900 shadow-soft outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
+              className="rounded-[1.2rem] border border-white/60 bg-white/80 px-3 py-2.5 text-sm text-slate-900 shadow-soft outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
             >
               {categoryOptions.filter((category) => category !== ALL_CATEGORIES).map((category) => (
                 <option key={category} value={category}>
@@ -581,16 +648,17 @@ const RecipeBook = () => {
             required={user?.role === 'seller'}
           />
           <FloatingInput
-            label="Dish image URL (optional)"
+            label="Image URL (optional)"
             value={formData.image}
             onChange={(event) => setFormData((current) => ({ ...current, image: event.target.value }))}
           />
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">Ingredients</p>
               <Button
                 type="button"
+                size="sm"
                 variant="ghost"
                 onClick={() =>
                   setFormData((current) => ({
@@ -599,11 +667,11 @@ const RecipeBook = () => {
                   }))
                 }
               >
-                Add ingredient
+                Add
               </Button>
             </div>
             {formData.ingredients.map((ingredient, index) => (
-              <div key={`ingredient-${index}`} className="grid gap-3 sm:grid-cols-[1fr_0.9fr_auto]">
+              <div key={`ingredient-${index}`} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
                 <FloatingInput
                   label={`Ingredient ${index + 1}`}
                   value={ingredient.name}
@@ -617,6 +685,7 @@ const RecipeBook = () => {
                 />
                 <Button
                   type="button"
+                  size="sm"
                   variant="secondary"
                   onClick={() =>
                     setFormData((current) => ({
@@ -634,11 +703,12 @@ const RecipeBook = () => {
             ))}
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">Cooking steps</p>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">Steps</p>
               <Button
                 type="button"
+                size="sm"
                 variant="ghost"
                 onClick={() =>
                   setFormData((current) => ({
@@ -651,7 +721,7 @@ const RecipeBook = () => {
               </Button>
             </div>
             {formData.steps.map((step, index) => (
-              <div key={`step-${index}`} className="space-y-3">
+              <div key={`step-${index}`} className="space-y-2">
                 <textarea
                   value={step}
                   onChange={(event) => updateStep(index, event.target.value)}
@@ -661,6 +731,7 @@ const RecipeBook = () => {
                 />
                 <Button
                   type="button"
+                  size="sm"
                   variant="secondary"
                   onClick={() =>
                     setFormData((current) => ({
@@ -672,25 +743,25 @@ const RecipeBook = () => {
                     }))
                   }
                 >
-                  Remove step
+                  Remove
                 </Button>
               </div>
             ))}
           </div>
 
-          <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200">
+          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
             <input
               type="checkbox"
               checked={formData.isPublic}
               onChange={(event) => setFormData((current) => ({ ...current, isPublic: event.target.checked }))}
               className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
             />
-            Make this dish visible in the public regional recipe book
+            Make this dish visible in the public recipe book
           </label>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Saving...' : editingRecipeId ? 'Update dish' : 'Publish dish'}
+              {submitting ? 'Saving...' : editingRecipeId ? 'Update' : 'Publish'}
             </Button>
             <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>
               Cancel
@@ -703,17 +774,24 @@ const RecipeBook = () => {
         isOpen={Boolean(selectedRecipe)}
         onClose={() => setSelectedRecipe(null)}
         title={selectedRecipe?.title || 'Recipe details'}
-        description={selectedRecipe?.description || 'Open the ingredient list and cooking steps.'}
         size="lg"
       >
         {selectedRecipe && (
-          <div className="space-y-6">
-            {selectedRecipe.authenticityTag ? (
-              <div className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
+          <div className="space-y-4">
+            {selectedRecipe.image && (
+              <SmartImage
+                src={selectedRecipe.image}
+                alt={selectedRecipe.title}
+                className="h-40 w-full rounded-xl"
+              />
+            )}
+            {selectedRecipe.authenticityTag && (
+              <div className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
+                <Icon path={icons.check} className="h-2.5 w-2.5" />
                 {selectedRecipe.authenticityTag}
               </div>
-            ) : null}
-            <div className="grid gap-4 rounded-[1.5rem] bg-slate-900/5 p-4 text-sm dark:bg-white/5 sm:grid-cols-2 lg:grid-cols-3">
+            )}
+            <div className="grid gap-3 rounded-xl bg-slate-900/5 p-3 text-xs dark:bg-white/5 sm:grid-cols-2">
               <div>
                 <p className="text-slate-500 dark:text-slate-400">Author</p>
                 <p className="mt-1 font-semibold text-slate-950 dark:text-white">{selectedRecipe.authorName}</p>
@@ -723,21 +801,19 @@ const RecipeBook = () => {
                 <p className="mt-1 font-semibold text-slate-950 dark:text-white">{selectedRecipe.category}</p>
               </div>
               <div>
-                <p className="text-slate-500 dark:text-slate-400">Cooking time</p>
+                <p className="text-slate-500 dark:text-slate-400">Time</p>
                 <p className="mt-1 font-semibold text-slate-950 dark:text-white">
                   {selectedRecipe.cookingTimeMinutes || 0} mins
                 </p>
               </div>
               <div>
-                <p className="text-slate-500 dark:text-slate-400">State of origin</p>
-                <p className="mt-1 font-semibold text-slate-950 dark:text-white">
-                  {selectedRecipe.originState || 'Profile-linked'}
-                </p>
+                <p className="text-slate-500 dark:text-slate-400">Servings</p>
+                <p className="mt-1 font-semibold text-slate-950 dark:text-white">{selectedRecipe.servings}</p>
               </div>
               <div>
-                <p className="text-slate-500 dark:text-slate-400">Region</p>
+                <p className="text-slate-500 dark:text-slate-400">State</p>
                 <p className="mt-1 font-semibold text-slate-950 dark:text-white">
-                  {selectedRecipe.originRegion || 'Not specified'}
+                  {selectedRecipe.originState || 'Profile-linked'}
                 </p>
               </div>
               <div>
@@ -746,41 +822,37 @@ const RecipeBook = () => {
                   {selectedRecipe.price !== null ? formatCurrency(selectedRecipe.price) : selectedRecipe.views || 0}
                 </p>
               </div>
-              <div>
-                <p className="text-slate-500 dark:text-slate-400">Servings</p>
-                <p className="mt-1 font-semibold text-slate-950 dark:text-white">{selectedRecipe.servings}</p>
-              </div>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-slate-950 dark:text-white">Ingredients</h3>
-              <div className="mt-3 space-y-2">
+              <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Ingredients</h3>
+              <div className="mt-2 space-y-1.5">
                 {selectedRecipe.ingredients.map((ingredient, index) => (
                   <div
                     key={`detail-ingredient-${index}`}
-                    className="rounded-[1.25rem] border border-white/60 bg-white/70 px-4 py-3 text-sm dark:border-white/10 dark:bg-white/5"
+                    className="flex items-center justify-between rounded-lg border border-white/60 bg-white/70 px-3 py-2 text-xs dark:border-white/10 dark:bg-white/5"
                   >
                     <span className="font-medium text-slate-950 dark:text-white">{ingredient.name}</span>
-                    {ingredient.quantity ? (
-                      <span className="ml-2 text-slate-500 dark:text-slate-400">{ingredient.quantity}</span>
-                    ) : null}
+                    {ingredient.quantity && (
+                      <span className="text-slate-500 dark:text-slate-400">{ingredient.quantity}</span>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-slate-950 dark:text-white">Method</h3>
-              <div className="mt-3 space-y-3">
+              <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Method</h3>
+              <div className="mt-2 space-y-2">
                 {selectedRecipe.steps.map((step, index) => (
                   <div
                     key={`detail-step-${index}`}
-                    className="rounded-[1.5rem] border border-white/60 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5"
+                    className="rounded-xl border border-white/60 bg-white/70 p-3 dark:border-white/10 dark:bg-white/5"
                   >
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand">
                       Step {step.stepNumber || index + 1}
                     </p>
-                    <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-200">{step.instruction}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-200">{step.instruction}</p>
                   </div>
                 ))}
               </div>

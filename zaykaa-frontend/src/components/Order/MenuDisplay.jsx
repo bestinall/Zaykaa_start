@@ -6,6 +6,17 @@ import Button from '../ui/Button';
 import { useCart } from '../../context/CartContext';
 import { formatCurrency } from '../../utils/display';
 
+const Icon = ({ path, className = 'h-5 w-5' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    {path}
+  </svg>
+);
+
+const icons = {
+  clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
+  star: <path d="M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.8L6.6 19.7l1-6L3.2 9.4l6.1-.9L12 3z" />,
+};
+
 const MenuDisplay = ({ restaurant }) => {
   const { cart, addToCart, updateQuantity } = useCart();
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -24,13 +35,18 @@ const MenuDisplay = ({ restaurant }) => {
 
   if (!restaurant) {
     return (
-      <Card hover={false} className="flex min-h-[360px] items-center justify-center text-center">
+      <Card hover={false} className="flex min-h-[280px] items-center justify-center text-center p-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand">Menu</p>
-          <h3 className="mt-4 font-display text-4xl text-slate-950 dark:text-white">
+          <div className="flex justify-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+              <Icon path={icons.bowl} className="h-5 w-5" />
+            </span>
+          </div>
+          <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-brand">Menu</p>
+          <h3 className="mt-2 font-display text-xl text-slate-950 dark:text-white">
             Select a restaurant to view its menu
           </h3>
-          <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">
+          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
             Once you pick a kitchen, its menu categories and quick add controls will appear here.
           </p>
         </div>
@@ -39,30 +55,44 @@ const MenuDisplay = ({ restaurant }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <Card hover={false} className="overflow-hidden p-0">
-        <div className="grid gap-0 lg:grid-cols-[300px_1fr]">
-          <SmartImage src={restaurant.image} alt={restaurant.name} fallbackText={restaurant.name} className="h-full min-h-[260px]" />
-          <div className="bg-hero-wash p-8 dark:bg-hero-wash-dark">
-            <SectionHeader
-              eyebrow="Selected restaurant"
-              title={restaurant.name}
-              description={restaurant.offer || 'Signature dishes and curated combos are highlighted below.'}
-            />
-            <div className="mt-6 flex flex-wrap gap-3">
+        <div className="grid gap-0 lg:grid-cols-[240px_1fr]">
+          <SmartImage
+            src={restaurant.image}
+            alt={restaurant.name}
+            fallbackText={restaurant.name}
+            className="h-full min-h-[180px]"
+          />
+          <div className="bg-hero-wash p-5 dark:bg-hero-wash-dark sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-brand">Selected restaurant</p>
+            <h2 className="mt-2 font-display text-2xl leading-snug text-slate-950 dark:text-white sm:text-3xl">
+              {restaurant.name}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300 line-clamp-2">
+              {restaurant.offer || 'Signature dishes and curated combos are highlighted below.'}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
               {(restaurant.cuisines || []).map((cuisine) => (
                 <span
                   key={cuisine}
-                  className="rounded-full border border-white/60 bg-white/80 px-3 py-1.5 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                  className="rounded-full bg-slate-900/5 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300"
                 >
                   {cuisine}
                 </span>
               ))}
             </div>
-            <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-300">
-              <span>{restaurant.deliveryTime || 'Fast delivery'}</span>
-              <span>{Number(restaurant.rating || 0).toFixed(1)} rating</span>
-              <span>{restaurant.reviews || 0} reviews</span>
+            <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400">
+              <span className="inline-flex items-center gap-1">
+                <Icon path={icons.clock} className="h-3.5 w-3.5" />
+                {restaurant.deliveryTime || 'Fast delivery'}
+              </span>
+              <span>•</span>
+              <span className="inline-flex items-center gap-1">
+                <Icon path={icons.star} className="h-3.5 w-3.5" />
+                {Number(restaurant.rating || 0).toFixed(1)} rating
+              </span>
+              <span>•</span>
               <span>{dishes.length} dishes</span>
             </div>
           </div>
@@ -70,13 +100,13 @@ const MenuDisplay = ({ restaurant }) => {
       </Card>
 
       <Card hover={false}>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {categories.map((category) => (
             <button
               key={category}
               type="button"
               onClick={() => setSelectedCategory(category)}
-              className={`rounded-full px-4 py-2.5 text-sm font-medium transition ${
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                 selectedCategory === category
                   ? 'bg-slate-950 text-white dark:bg-white dark:text-slate-950'
                   : 'border border-white/60 bg-white/80 text-slate-700 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-200'
@@ -87,60 +117,63 @@ const MenuDisplay = ({ restaurant }) => {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-4 xl:grid-cols-2">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {filteredDishes.map((dish) => {
             const quantity = getQuantity(dish.id);
 
             return (
-              <Card key={dish.id} hover={false} className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand">
+              <Card key={dish.id} hover={false} padded={false} className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand">
                       {dish.category || 'Chef special'}
                     </p>
-                    <h3 className="mt-3 font-display text-2xl text-slate-950 dark:text-white">
+                    <h3 className="mt-1 font-display text-lg leading-snug text-slate-950 dark:text-white line-clamp-2">
                       {dish.name}
                     </h3>
-                    <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    <p className="mt-1.5 text-xs leading-5 text-slate-500 dark:text-slate-400 line-clamp-2">
                       {dish.description || 'Freshly prepared menu item from this kitchen.'}
                     </p>
                   </div>
-                  <div className="rounded-[1.35rem] bg-slate-900/5 px-4 py-3 text-right dark:bg-white/5">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                  <div className="rounded-[1.2rem] bg-slate-900/5 px-3 py-2 text-right dark:bg-white/5">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                       Price
                     </p>
-                    <p className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">
+                    <p className="mt-1 text-base font-semibold text-slate-950 dark:text-white">
                       {formatCurrency(dish.price)}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between gap-4">
-                  <div className="text-sm text-slate-500 dark:text-slate-400">
-                    {dish.prepTime || 'Fast prep'} • {dish.spicyLevel || 'Balanced flavors'}
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                    <Icon path={icons.clock} className="h-3.5 w-3.5" />
+                    <span>{dish.prepTime || 'Fast prep'}</span>
                   </div>
                   {quantity > 0 ? (
-                    <div className="inline-flex items-center gap-3 rounded-full border border-white/60 bg-white/80 px-3 py-2 dark:border-white/10 dark:bg-white/5">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 px-2.5 py-1 dark:border-white/10 dark:bg-white/5">
                       <button
                         type="button"
                         onClick={() => updateQuantity(dish.id, quantity - 1)}
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-white dark:bg-white dark:text-slate-950"
                       >
                         -
                       </button>
-                      <span className="min-w-5 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                      <span className="min-w-4 text-center text-xs font-semibold text-slate-900 dark:text-white">
                         {quantity}
                       </span>
                       <button
                         type="button"
                         onClick={() => updateQuantity(dish.id, quantity + 1)}
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-white dark:bg-white dark:text-slate-950"
                       >
                         +
                       </button>
                     </div>
                   ) : (
-                    <Button onClick={() => addToCart(dish, restaurant.id, restaurant.name)}>Add to cart</Button>
+                    <Button size="sm" onClick={() => addToCart(dish, restaurant.id, restaurant.name)}>
+                      Add to cart
+                    </Button>
                   )}
                 </div>
               </Card>
