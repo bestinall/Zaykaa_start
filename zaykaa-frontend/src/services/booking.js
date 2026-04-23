@@ -66,11 +66,19 @@ export const bookingService = {
   },
 
   createBooking: async (bookingData) => {
-    if (MOCK_MODE) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    // Detect preview chefs by string IDs (chef-1, chef-2, etc.) - use mock mode for them only
+    const isPreviewChef = typeof bookingData.chefId === 'string' && bookingData.chefId.startsWith('chef-');
+
+    if (MOCK_MODE || isPreviewChef) {
+      await new Promise(resolve => setTimeout(resolve, 800));
       return {
-        booking: { id: Math.random(), ...bookingData },
-        message: 'Booking created',
+        booking: {
+          id: Math.floor(Math.random() * 10000),
+          bookingReference: `DEMO-${Date.now().toString(36).toUpperCase()}`,
+          status: 'pending',
+          ...bookingData,
+        },
+        message: 'Demo booking created',
       };
     }
 
