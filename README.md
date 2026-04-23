@@ -644,3 +644,483 @@ Then open:
 
 - Frontend: `http://localhost:3000`
 - Gateway health: `http://localhost:5000/api/health`
+
+
+📍 6 sections that need updates + 1 new file
+#	Section	What to update
+1	Recent Updates	Add AI chat bullet
+2	Project Status → New microservices	Add ai_chat_service
+3	Architecture diagram	Add AI Chat Service node
+4	Repository Layout	Add folder in tree
+5	Runtime Components table	Add port 5007 row
+6	Tech Stack	Add Gemini row
+7	Environment Configuration	Add AI chat env block
+8	How To Run → Option C	Add run command
+9	Health Checks	Add endpoint
+10	API Summary table	Add AI routes
+11	Prerequisites	Add Gemini API key note
+12	NEW FILE	microservices/ai_chat_service/README.md
+Let's go one by one — copy-paste each block into the right place.
+
+✏️ Step 1 — ## Recent Updates section
+Add this as the first bullet:
+
+- Added `ai_chat_service` on port `5007`, a Gemini-powered recipe assistant chatbot (Zaykaa Chef AI) accessible from the frontend with dark mode, saved recipes, and markdown responses
+✏️ Step 2 — ## Project Status → New microservices
+In the numbered list of microservices, add:
+
+   - `ai_chat_service`
+So it becomes:
+
+1. New microservices:
+   - `api_gateway`
+   - `user_service`
+   - `chef_service`
+   - `booking_service`
+   - `order_service`
+   - `payment_service`
+   - `ai_chat_service`
+✏️ Step 3 — ## Architecture (Mermaid diagram)
+Replace the existing mermaid block with this updated version:
+
+```
+flowchart LR
+    FE[React Frontend<br/>Port 3000] -->|Axios /api requests| GW[API Gateway<br/>Port 5000]
+    FE -->|Direct chat requests| AI[AI Chat Service<br/>Port 5007]
+
+    GW --> US[User Service<br/>Port 5001]
+    GW --> LB[Legacy Backend<br/>Port 5002]
+    GW --> CS[Chef Service<br/>Port 5003]
+    GW --> BS[Booking Service<br/>Port 5004]
+    GW --> OS[Order Service<br/>Port 5005]
+    GW --> PS[Payment Service<br/>Port 5006]
+
+    AI --> GEM[(Google Gemini API<br/>gemini-2.5-flash)]
+
+    US --> UDB[(zaykaa_user_service)]
+    LB --> LDB[(zaykaa_db)]
+    CS --> CDB[(zaykaa_chef_service)]
+    BS --> BDB[(zaykaa_booking_service)]
+    OS --> ODB[(zaykaa_order_service)]
+    PS --> PDB[(zaykaa_payment_service)]
+
+    BS --> US
+    BS --> CS
+    PS --> OS
+```
+✏️ Step 4 — ## Repository Layout
+Update the microservices/ block and add the Bot/ component folder:
+
+|-- microservices/
+|   |-- api_gateway/
+|   |-- user_service/
+|   |-- chef_service/
+|   |-- booking_service/
+|   |-- order_service/
+|   |-- payment_service/
+|   `-- ai_chat_service/
+|-- zaykaa-backend/
+|   `-- app.py
+`-- zaykaa-frontend/
+    |-- package.json
+    |-- tailwind.config.js
+    `-- src/
+        |-- pages/
+        |-- components/
+        |   `-- Bot/          # ChatBot.jsx (Zaykaa Chef AI)
+        |-- services/
+        |-- context/
+        `-- styles/
+✏️ Step 5 — ## Runtime Components table
+Add this row before the MySQL row:
+
+| AI Chat Service | 5007 | Gemini-powered recipe chatbot (Zaykaa Chef AI) | None (session memory) | Uses `google-genai` SDK with `gemini-2.5-flash` |
+✏️ Step 6 — ## Tech Stack table
+Add these two rows after the existing entries:
+
+| AI Chat Service | Flask 3, `google-genai` SDK, Flask-CORS |
+| AI Model | Google Gemini `gemini-2.5-flash` (with `gemini-2.0-flash`, `gemini-flash-latest` fallback) |
+✏️ Step 7 — ## Prerequisites
+Add this bullet:
+
+- Google Gemini API key (free tier works) for the AI chat service — get one at https://aistudio.google.com/apikey
+✏️ Step 8 — ## Environment Configuration
+In the list of .env files, add:
+
+- `microservices/ai_chat_service/.env`
+Add a new subsection right after "Payment service values":
+
+### AI Chat Service values
+
+| Key | Meaning | Default |
+| --- | --- | --- |
+| `GEMINI_API_KEY` | Google Gemini API key (required) | empty |
+| `PORT` | Port the chat service listens on | `5007` |
+| `CORS_ORIGINS` | Allowed frontend origins | `http://localhost:3000` |
+
+### Frontend-specific AI value
+
+| Key | Meaning | Default |
+| --- | --- | --- |
+| `REACT_APP_AI_URL` | Base URL for the AI chat service | `http://127.0.0.1:5007` |
+✏️ Step 9 — ## How To Run → Option C
+Add this row to the table:
+
+| AI Chat Service | `cd microservices/ai_chat_service && python app.py` |
+Also update Option A to mention you need to install the AI service requirements:
+
+1. Install backend Python packages:
+
+    ```
+    python -m pip install -r requirements.txt
+    python -m pip install -r microservices/ai_chat_service/requirements.txt
+    ```
+✏️ Step 10 — ## Health Checks
+Add this bullet:
+
+- AI Chat service: `http://localhost:5007/health`
+✏️ Step 11 — ## API Summary table
+Add this row:
+
+| AI Recipe Chat | `/api/ai/chat`, `/api/ai/clear` | `ai_chat_service` (called directly by frontend, not through gateway) |
+And in the "For full route lists" section, add:
+
+- [AI Chat Service README](https://github.com/bestinall/Zaykaa_start/blob/main/microservices/ai_chat_service/README.md)
+✏️ Step 12 — ## Notes And Limitations
+Add this bullet:
+
+- The `ai_chat_service` does **not** go through the API gateway — the frontend calls it directly via `REACT_APP_AI_URL`. It uses in-memory session storage (chat history is lost on restart)
+- The AI chat service requires a valid `GEMINI_API_KEY`; without it, the `/api/ai/chat` endpoint returns 500
+- Favorite recipes are currently stored in **browser localStorage only** (not yet persisted to the backend — per-device only)
+📄 NEW FILE — microservices/ai_chat_service/README.md
+Create this file so it matches the other services:
+
+# AI Chat Service
+
+Zaykaa Chef AI — a Gemini-powered recipe assistant chatbot for the Zaykaa platform.
+
+## Port
+
+`5007`
+
+## Responsibilities
+
+- Recipe suggestions based on user ingredients
+- Step-by-step cooking instructions
+- Nutrition and meal-planning Q&A
+- Multi-turn chat with per-session history
+- Optional grounding on existing Zaykaa recipes passed as context
+
+## Tech
+
+- Flask 3
+- Flask-CORS
+- `google-genai` SDK (new Google GenAI SDK, replaces deprecated `google-generativeai`)
+- Model: `gemini-2.5-flash` with fallback to `gemini-2.0-flash` and `gemini-flash-latest`
+
+## Endpoints
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| POST | `/api/ai/chat` | Send a user message, get an AI reply |
+| POST | `/api/ai/clear` | Clear chat history for a session |
+| GET | `/health` | Health check |
+
+### `POST /api/ai/chat`
+
+**Request:**
+```json
+{
+  "message": "What can I make with tomatoes and pasta?",
+  "session_id": "optional-session-id",
+  "recipe_context": "optional text block of DB recipes"
+}
+Response:
+
+{
+  "reply": "## Simple Tomato Pasta 🍝 ...",
+  "session_id": "generated-or-echoed-id"
+}
+POST /api/ai/clear
+Request:
+
+{ "session_id": "existing-session-id" }
+Environment Variables
+Key	Required	Default
+GEMINI_API_KEY	yes	—
+PORT	no	5007
+CORS_ORIGINS	no	http://localhost:3000
+Get a free API key at https://aistudio.google.com/apikey.
+
+Run Locally
+cd microservices/ai_chat_service
+pip install -r requirements.txt
+python app.py
+Service will be available at http://127.0.0.1:5007.
+
+Frontend Integration
+The frontend component zaykaa-frontend/src/components/Bot/ChatBot.jsx calls this service directly using REACT_APP_AI_URL (default http://127.0.0.1:5007).
+
+Features on the frontend:
+
+Floating chat bubble
+Markdown-rendered replies (bold, headings, lists)
+Dark / light theme toggle
+Copy and save-toggle for each bot message
+Persistent chat history and favorites in localStorage
+Quick-start suggestion chips
+Multi-line input (Shift+Enter)
+Limitations
+Session history is stored in-memory — lost on service restart
+Service does not go through the API gateway (direct CORS call from frontend)
+Favorites currently stored only in browser localStorage, not in MySQL
+Free-tier Gemini quota may rate-limit under heavy use (auto-fallback to alternate models helps)
+
+✏️ Step 1 — ## Recent Updates section
+Add this as the first bullet:
+
+- Added `ai_chat_service` on port `5007`, a Gemini-powered recipe assistant chatbot (Zaykaa Chef AI) accessible from the frontend with dark mode, saved recipes, and markdown responses
+✏️ Step 2 — ## Project Status → New microservices
+In the numbered list of microservices, add:
+
+   - `ai_chat_service`
+So it becomes:
+
+1. New microservices:
+   - `api_gateway`
+   - `user_service`
+   - `chef_service`
+   - `booking_service`
+   - `order_service`
+   - `payment_service`
+   - `ai_chat_service`
+✏️ Step 3 — ## Architecture (Mermaid diagram)
+Replace the existing mermaid block with this updated version:
+
+```
+flowchart LR
+    FE[React Frontend<br/>Port 3000] -->|Axios /api requests| GW[API Gateway<br/>Port 5000]
+    FE -->|Direct chat requests| AI[AI Chat Service<br/>Port 5007]
+
+    GW --> US[User Service<br/>Port 5001]
+    GW --> LB[Legacy Backend<br/>Port 5002]
+    GW --> CS[Chef Service<br/>Port 5003]
+    GW --> BS[Booking Service<br/>Port 5004]
+    GW --> OS[Order Service<br/>Port 5005]
+    GW --> PS[Payment Service<br/>Port 5006]
+
+    AI --> GEM[(Google Gemini API<br/>gemini-2.5-flash)]
+
+    US --> UDB[(zaykaa_user_service)]
+    LB --> LDB[(zaykaa_db)]
+    CS --> CDB[(zaykaa_chef_service)]
+    BS --> BDB[(zaykaa_booking_service)]
+    OS --> ODB[(zaykaa_order_service)]
+    PS --> PDB[(zaykaa_payment_service)]
+
+    BS --> US
+    BS --> CS
+    PS --> OS
+```
+✏️ Step 4 — ## Repository Layout
+Update the microservices/ block and add the Bot/ component folder:
+
+|-- microservices/
+|   |-- api_gateway/
+|   |-- user_service/
+|   |-- chef_service/
+|   |-- booking_service/
+|   |-- order_service/
+|   |-- payment_service/
+|   `-- ai_chat_service/
+|-- zaykaa-backend/
+|   `-- app.py
+`-- zaykaa-frontend/
+    |-- package.json
+    |-- tailwind.config.js
+    `-- src/
+        |-- pages/
+        |-- components/
+        |   `-- Bot/          # ChatBot.jsx (Zaykaa Chef AI)
+        |-- services/
+        |-- context/
+        `-- styles/
+✏️ Step 5 — ## Runtime Components table
+Add this row before the MySQL row:
+
+| AI Chat Service | 5007 | Gemini-powered recipe chatbot (Zaykaa Chef AI) | None (session memory) | Uses `google-genai` SDK with `gemini-2.5-flash` |
+✏️ Step 6 — ## Tech Stack table
+Add these two rows after the existing entries:
+
+| AI Chat Service | Flask 3, `google-genai` SDK, Flask-CORS |
+| AI Model | Google Gemini `gemini-2.5-flash` (with `gemini-2.0-flash`, `gemini-flash-latest` fallback) |
+✏️ Step 7 — ## Prerequisites
+Add this bullet:
+
+- Google Gemini API key (free tier works) for the AI chat service — get one at https://aistudio.google.com/apikey
+✏️ Step 8 — ## Environment Configuration
+In the list of .env files, add:
+
+- `microservices/ai_chat_service/.env`
+Add a new subsection right after "Payment service values":
+
+### AI Chat Service values
+
+| Key | Meaning | Default |
+| --- | --- | --- |
+| `GEMINI_API_KEY` | Google Gemini API key (required) | empty |
+| `PORT` | Port the chat service listens on | `5007` |
+| `CORS_ORIGINS` | Allowed frontend origins | `http://localhost:3000` |
+
+### Frontend-specific AI value
+
+| Key | Meaning | Default |
+| --- | --- | --- |
+| `REACT_APP_AI_URL` | Base URL for the AI chat service | `http://127.0.0.1:5007` |
+✏️ Step 9 — ## How To Run → Option C
+Add this row to the table:
+
+| AI Chat Service | `cd microservices/ai_chat_service && python app.py` |
+Also update Option A to mention you need to install the AI service requirements:
+
+1. Install backend Python packages:
+
+    ```
+    python -m pip install -r requirements.txt
+    python -m pip install -r microservices/ai_chat_service/requirements.txt
+    ```
+✏️ Step 10 — ## Health Checks
+Add this bullet:
+
+- AI Chat service: `http://localhost:5007/health`
+✏️ Step 11 — ## API Summary table
+Add this row:
+
+| AI Recipe Chat | `/api/ai/chat`, `/api/ai/clear` | `ai_chat_service` (called directly by frontend, not through gateway) |
+And in the "For full route lists" section, add:
+
+- [AI Chat Service README](https://github.com/bestinall/Zaykaa_start/blob/main/microservices/ai_chat_service/README.md)
+✏️ Step 12 — ## Notes And Limitations
+Add this bullet:
+
+- The `ai_chat_service` does **not** go through the API gateway — the frontend calls it directly via `REACT_APP_AI_URL`. It uses in-memory session storage (chat history is lost on restart)
+- The AI chat service requires a valid `GEMINI_API_KEY`; without it, the `/api/ai/chat` endpoint returns 500
+- Favorite recipes are currently stored in **browser localStorage only** (not yet persisted to the backend — per-device only)
+📄 NEW FILE — microservices/ai_chat_service/README.md
+Create this file so it matches the other services:
+
+# AI Chat Service
+
+Zaykaa Chef AI — a Gemini-powered recipe assistant chatbot for the Zaykaa platform.
+
+## Port
+
+`5007`
+
+## Responsibilities
+
+- Recipe suggestions based on user ingredients
+- Step-by-step cooking instructions
+- Nutrition and meal-planning Q&A
+- Multi-turn chat with per-session history
+- Optional grounding on existing Zaykaa recipes passed as context
+
+## Tech
+
+- Flask 3
+- Flask-CORS
+- `google-genai` SDK (new Google GenAI SDK, replaces deprecated `google-generativeai`)
+- Model: `gemini-2.5-flash` with fallback to `gemini-2.0-flash` and `gemini-flash-latest`
+
+## Endpoints
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| POST | `/api/ai/chat` | Send a user message, get an AI reply |
+| POST | `/api/ai/clear` | Clear chat history for a session |
+| GET | `/health` | Health check |
+
+### `POST /api/ai/chat`
+
+**Request:**
+```json
+{
+  "message": "What can I make with tomatoes and pasta?",
+  "session_id": "optional-session-id",
+  "recipe_context": "optional text block of DB recipes"
+}
+Response:
+
+{
+  "reply": "## Simple Tomato Pasta 🍝 ...",
+  "session_id": "generated-or-echoed-id"
+}
+POST /api/ai/clear
+Request:
+
+{ "session_id": "existing-session-id" }
+Environment Variables
+Key	Required	Default
+GEMINI_API_KEY	yes	—
+PORT	no	5007
+CORS_ORIGINS	no	http://localhost:3000
+Get a free API key at https://aistudio.google.com/apikey.
+
+Run Locally
+cd microservices/ai_chat_service
+pip install -r requirements.txt
+python app.py
+Service will be available at http://127.0.0.1:5007.
+
+Frontend Integration
+The frontend component zaykaa-frontend/src/components/Bot/ChatBot.jsx calls this service directly using REACT_APP_AI_URL (default http://127.0.0.1:5007).
+
+Features on the frontend:
+
+Floating chat bubble
+Markdown-rendered replies (bold, headings, lists)
+Dark / light theme toggle
+Copy and save-toggle for each bot message
+Persistent chat history and favorites in localStorage
+Quick-start suggestion chips
+Multi-line input (Shift+Enter)
+Limitations
+Session history is stored in-memory — lost on service restart
+Service does not go through the API gateway (direct CORS call from frontend)
+Favorites currently stored only in browser localStorage, not in MySQL
+Free-tier Gemini quota may rate-limit under heavy use (auto-fallback to alternate models helps)
+Future Enhancements
+Persist chat history and favorites in a MySQL DB (e.g., zaykaa_ai_service)
+Route requests through the API gateway with JWT auth so chats tie to real users
+Ground replies on actual chef_service recipe catalog
+Add recipe image generation (Nano Banana)
+Voice input / text-to-speech readout
+
+---
+
+## 📄 Also create — `microservices/ai_chat_service/requirements.txt`
+
+If you haven't already, add this file so others can install dependencies:
+
+flask>=3.0 flask-cors>=4.0 google-genai>=1.0 python-dotenv>=1.0
+
+
+---
+
+## 📄 Also create — `microservices/ai_chat_service/.env.example`
+
+So others know what env vars to set (without exposing your key):
+
+GEMINI_API_KEY=your_gemini_api_key_here PORT=5007 CORS_ORIGINS=http://localhost:3000
+
+
+---
+
+## 🚀 Push the docs
+
+Once you've made all these changes:
+
+```powershell
+git add README.md microservices/ai_chat_service/README.md microservices/ai_chat_service/requirements.txt microservices/ai_chat_service/.env.example
+git commit -m "docs: add AI chat service to README and create service-specific docs"
+git push origin main
