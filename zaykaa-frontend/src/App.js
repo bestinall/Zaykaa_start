@@ -14,6 +14,8 @@ import ChefDashboard from './pages/ChefDashboard';
 import RecipeBook from './pages/RecipeBook';
 import Card from './components/ui/Card';
 import Skeleton from './components/ui/Skeleton';
+import ChatBot from "./components/Bot/ChatBot";
+
 
 const ProtectedRoute = ({ children, requiredRole, requiredRoles }) => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -107,6 +109,18 @@ const AnimatedRoutes = () => {
   );
 };
 
+function AppShell() {
+  const location = useLocation();
+  const hideChatOn = ["/login", "/register"];
+  const showChat = !hideChatOn.includes(location.pathname);
+  return (
+    <>
+      <AnimatedRoutes />
+      {showChat && <ChatBot />}
+    </>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -114,7 +128,7 @@ function App() {
         <AuthProvider>
           <CartProvider>
             <Router>
-              <AnimatedRoutes />
+              <AppShell />
             </Router>
           </CartProvider>
         </AuthProvider>
