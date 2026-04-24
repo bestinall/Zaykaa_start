@@ -62,6 +62,24 @@
     -webkit-text-fill-color: inherit;
     transition: background-color 9999s ease-in-out 0s;
   }
+
+  /* Fix native select dropdown options for light and dark modes */
+  select {
+    color-scheme: light;
+  }
+
+  .dark select {
+    color-scheme: dark;
+  }
+
+  select option {
+    @apply bg-brand-cream text-slate-900;
+    padding: 8px 12px;
+  }
+
+  .dark select option {
+    @apply bg-[#16161d] text-slate-100;
+  }
 }
 
 @layer components {
