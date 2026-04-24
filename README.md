@@ -13,6 +13,7 @@ The repository is in an active migration phase. The React frontend talks to the 
 
 ## Recent Updates
 
+- Added `ai_chat_service` on port `5007`, a Gemini-powered recipe assistant chatbot (Zaykaa Chef AI) accessible from the frontend with dark mode, saved recipes, and markdown responses
 - Added `payment_service` on port `5006`, plus gateway aliases for `/api/payments` and `/api/payouts`
 - Added the `zaykaa_payment_service` MySQL database to the stack and Docker Compose flow
 - Expanded user and chef profile/location support with `native_state` and `native_region`
@@ -30,6 +31,7 @@ The workspace currently runs two backend styles side by side:
    - `booking_service`
    - `order_service`
    - `payment_service`
+   - `ai_chat_service`
 2. Legacy compatibility backend:
    - `zaykaa-backend`
 
@@ -69,6 +71,7 @@ The recommended local workflow is to start the stack from the repository root wi
 ```mermaid
 flowchart LR
     FE[React Frontend<br/>Port 3000] -->|Axios /api requests| GW[API Gateway<br/>Port 5000]
+    FE -->|Direct chat requests| AI[AI Chat Service<br/>Port 5007]
 
     GW --> US[User Service<br/>Port 5001]
     GW --> LB[Legacy Backend<br/>Port 5002]
@@ -76,6 +79,8 @@ flowchart LR
     GW --> BS[Booking Service<br/>Port 5004]
     GW --> OS[Order Service<br/>Port 5005]
     GW --> PS[Payment Service<br/>Port 5006]
+
+    AI --> GEM[(Google Gemini API<br/>gemini-2.5-flash)]
 
     US --> UDB[(zaykaa_user_service)]
     LB --> LDB[(zaykaa_db)]
@@ -125,7 +130,8 @@ Zaykaa_Start/
 |   |-- chef_service/
 |   |-- booking_service/
 |   |-- order_service/
-|   `-- payment_service/
+|   |-- payment_service/
+|   `-- ai_chat_service/
 |-- zaykaa-backend/
 |   `-- app.py
 `-- zaykaa-frontend/
@@ -134,6 +140,7 @@ Zaykaa_Start/
     `-- src/
         |-- pages/
         |-- components/
+        |   `-- Bot/
         |-- services/
         |-- context/
         `-- styles/
@@ -151,6 +158,7 @@ Zaykaa_Start/
 | Booking Service | 5004 | Chef booking lifecycle and availability checks | `zaykaa_booking_service` | Calls user and chef services as needed |
 | Order Service | 5005 | Restaurants, cart, coupons, orders | `zaykaa_order_service` | Raw SQL, MySQL pool |
 | Payment Service | 5006 | Payments, refunds, payouts, payment events | `zaykaa_payment_service` | Integrates with order data and provider abstractions |
+| AI Chat Service | 5007 | Gemini-powered recipe chatbot (Zaykaa Chef AI) | None (session memory) | Uses `google-genai` SDK with `gemini-2.5-flash` |
 | MySQL | 3306 | Main database server | All DBs above | Local MySQL or Docker MySQL |
 
 ## Frontend
@@ -351,7 +359,9 @@ Each microservice schema starts with `CREATE DATABASE IF NOT EXISTS ...` and `US
 | Microservices | Flask 3, raw SQL, `mysql-connector-python`, JWT, CORS |
 | Payment provider abstraction | `mock`, `stripe`, `razorpay` provider interfaces |
 | Legacy backend | Flask 3, Flask-SQLAlchemy, PyMySQL, bcrypt |
+| AI Chat Service | Flask 3, `google-genai` SDK, Flask-CORS |
 | Authentication | JWT |
+| AI Model | Google Gemini `gemini-2.5-flash` (with `gemini-2.0-flash`, `gemini-flash-latest` fallback) |
 | Database | MySQL 8 |
 | Dev orchestration | Node.js script (`scripts/start-dev.js`) |
 | Containerization | Docker Compose |
@@ -363,6 +373,7 @@ Each microservice schema starts with `CREATE DATABASE IF NOT EXISTS ...` and `US
 - npm 10.9.2 or compatible
 - MySQL 8.x if you use the local startup path
 - Docker Desktop or Docker Engine if you use the Compose path
+- Google Gemini API key (free tier works) for the AI chat service — get one at https://aistudio.google.com/apikey
 
 Important note:
 
@@ -380,6 +391,7 @@ The project reads environment variables from:
 - `microservices/booking_service/.env`
 - `microservices/order_service/.env`
 - `microservices/payment_service/.env`
+- `microservices/ai_chat_service/.env`
 - `microservices/api_gateway/.env`
 - `zaykaa-frontend/.env`
 
@@ -425,11 +437,20 @@ Use the example files as templates and keep real `.env` files local only.
 | `RAZORPAY_KEY_ID` | Razorpay key id | empty |
 | `RAZORPAY_KEY_SECRET` | Razorpay secret | empty |
 
-### Frontend-specific value
+### AI Chat Service values
+
+| Key | Meaning | Default |
+|---|---|---|
+| `GEMINI_API_KEY` | Google Gemini API key (required) | empty |
+| `PORT` | Port the chat service listens on | `5007` |
+| `CORS_ORIGINS` | Allowed frontend origins | `http://localhost:3000` |
+
+### Frontend-specific values
 
 | Key | Meaning | Default |
 |---|---|---|
 | `REACT_APP_API_URL` | Base URL for frontend API calls | `http://localhost:5000/api` |
+| `REACT_APP_AI_URL` | Base URL for the AI chat service | `http://127.0.0.1:5007` |
 
 ## How To Run
 
@@ -444,6 +465,7 @@ This is the most complete way to run the project because it starts:
 - booking service
 - order service
 - payment service
+- AI chat service
 - legacy backend
 
 Steps:
@@ -514,6 +536,7 @@ If you use Docker Compose and also need the frontend or legacy backend, run thos
 | Booking service | `cd microservices/booking_service && python app.py` |
 | Order service | `cd microservices/order_service && python app.py` |
 | Payment service | `cd microservices/payment_service && python app.py` |
+| AI Chat Service | `cd microservices/ai_chat_service && python app.py` |
 | Legacy backend | `cd zaykaa-backend && python app.py` |
 
 ## Root NPM Scripts
@@ -538,6 +561,7 @@ If you use Docker Compose and also need the frontend or legacy backend, run thos
 - Booking service: `http://localhost:5004/health`
 - Order service: `http://localhost:5005/health`
 - Payment service: `http://localhost:5006/health`
+- AI Chat service: `http://localhost:5007/health`
 
 ### Database connectivity
 
@@ -566,6 +590,7 @@ The frontend mainly uses these gateway routes:
 | Orders | `/api/restaurants`, `/api/coupons/validate`, `/api/orders`, `/api/orders/cart`, `/api/orders/recent` | `order_service` |
 | Payments | `/api/payments`, `/api/payments/my`, `/api/payments/order/:orderId`, `/api/payments/:id/verify`, `/api/payments/:id/refund` | `payment_service` |
 | Payouts (admin only) | `/api/payouts`, `/api/payouts/:id` | `payment_service` |
+| AI Recipe Chat | `/api/ai/chat`, `/api/ai/clear` | `ai_chat_service` (called directly by frontend, not through gateway) |
 | Fallback legacy routes | `/api/<path>` when no microservice route matches | `zaykaa-backend` |
 
 For full route lists and example payloads, see:
@@ -585,6 +610,9 @@ For full route lists and example payloads, see:
 - `payment_service` defaults to the mock provider locally; Stripe and Razorpay abstractions are present for later real-provider integration
 - `native_state` is currently required for `chef` and `seller` registration payloads in the user-service validator
 - Docker Compose does not start the frontend or legacy backend
+- The `ai_chat_service` does **not** go through the API gateway — the frontend calls it directly via `REACT_APP_AI_URL`. It uses in-memory session storage (chat history is lost on restart)
+- The AI chat service requires a valid `GEMINI_API_KEY`; without it, the `/api/ai/chat` endpoint returns 500
+- Favorite recipes are currently stored in **browser localStorage only** (not yet persisted to the backend — per-device only)
 
 ## Troubleshooting
 
@@ -644,71 +672,6 @@ Then open:
 
 - Frontend: `http://localhost:3000`
 - Gateway health: `http://localhost:5000/api/health`
-
-
-📍 6 sections that need updates + 1 new file
-#	Section	What to update
-1	Recent Updates	Add AI chat bullet
-2	Project Status → New microservices	Add ai_chat_service
-3	Architecture diagram	Add AI Chat Service node
-4	Repository Layout	Add folder in tree
-5	Runtime Components table	Add port 5007 row
-6	Tech Stack	Add Gemini row
-7	Environment Configuration	Add AI chat env block
-8	How To Run → Option C	Add run command
-9	Health Checks	Add endpoint
-10	API Summary table	Add AI routes
-11	Prerequisites	Add Gemini API key note
-12	NEW FILE	microservices/ai_chat_service/README.md
-Let's go one by one — copy-paste each block into the right place.
-
-✏️ Step 1 — ## Recent Updates section
-Add this as the first bullet:
-
-- Added `ai_chat_service` on port `5007`, a Gemini-powered recipe assistant chatbot (Zaykaa Chef AI) accessible from the frontend with dark mode, saved recipes, and markdown responses
-✏️ Step 2 — ## Project Status → New microservices
-In the numbered list of microservices, add:
-
-   - `ai_chat_service`
-So it becomes:
-
-1. New microservices:
-   - `api_gateway`
-   - `user_service`
-   - `chef_service`
-   - `booking_service`
-   - `order_service`
-   - `payment_service`
-   - `ai_chat_service`
-✏️ Step 3 — ## Architecture (Mermaid diagram)
-Replace the existing mermaid block with this updated version:
-
-```
-flowchart LR
-    FE[React Frontend<br/>Port 3000] -->|Axios /api requests| GW[API Gateway<br/>Port 5000]
-    FE -->|Direct chat requests| AI[AI Chat Service<br/>Port 5007]
-
-    GW --> US[User Service<br/>Port 5001]
-    GW --> LB[Legacy Backend<br/>Port 5002]
-    GW --> CS[Chef Service<br/>Port 5003]
-    GW --> BS[Booking Service<br/>Port 5004]
-    GW --> OS[Order Service<br/>Port 5005]
-    GW --> PS[Payment Service<br/>Port 5006]
-
-    AI --> GEM[(Google Gemini API<br/>gemini-2.5-flash)]
-
-    US --> UDB[(zaykaa_user_service)]
-    LB --> LDB[(zaykaa_db)]
-    CS --> CDB[(zaykaa_chef_service)]
-    BS --> BDB[(zaykaa_booking_service)]
-    OS --> ODB[(zaykaa_order_service)]
-    PS --> PDB[(zaykaa_payment_service)]
-
-    BS --> US
-    BS --> CS
-    PS --> OS
-```
-✏️ Step 4 — ## Repository Layout
 Update the microservices/ block and add the Bot/ component folder:
 
 |-- microservices/
