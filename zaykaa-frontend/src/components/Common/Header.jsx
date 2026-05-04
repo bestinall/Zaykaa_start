@@ -3,43 +3,49 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { useTheme } from '../../context/ThemeContext';
 import ThemeToggle from '../ui/ThemeToggle';
+import { buttonStyles } from '../ui/Button';
 import { humanize } from '../../utils/display';
 import { cn } from '../../utils/cn';
-import { buttonStyles } from '../ui/Button';
+import { getHomeRouteForRole, isFoodLoverRole } from '../../utils/roleRoutes';
 
 const Header = () => {
   const { user, logout } = useAuth();
   const { getTotalItems } = useCart();
-  const { isDark } = useTheme();
   const navigate = useNavigate();
   const cartItemCount = getTotalItems();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isFoodLover = isFoodLoverRole(user?.role);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const navItems = [
-    { to: '/dashboard', label: 'Dashboard' },
-    { to: '/recipes', label: 'Recipe Book' },
-    { to: '/book-chef', label: 'Book Chef' },
-    {
-      to: '/order',
-      label: 'Order Food',
-      badge: cartItemCount > 0 ? cartItemCount : null,
-    },
-  ];
-
-  if (user?.role === 'chef') {
-    navItems.push({ to: '/chef-dashboard', label: 'Chef Studio' });
-  }
+  const navItems =
+    user?.role === 'chef'
+      ? [
+          { to: '/chef-dashboard', label: 'Chef Studio' },
+          { to: '/recipes', label: 'Recipe Book' },
+        ]
+      : [
+          { to: getHomeRouteForRole(user?.role), label: 'Dashboard' },
+          { to: '/recipes', label: 'Recipe Book' },
+          ...(isFoodLover
+            ? [
+                { to: '/book-chef', label: 'Book Chef' },
+                {
+                  to: '/order',
+                  label: 'Order Food',
+                  badge: cartItemCount > 0 ? cartItemCount : null,
+                },
+              ]
+            : []),
+        ];
 
   const navLinkClass = ({ isActive }) =>
     cn(
-      'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition',
+      'inline-flex min-w-[7.75rem] items-center justify-center gap-2 rounded-full px-4 py-2 text-center text-sm font-medium transition',
       isActive
         ? 'bg-slate-950 text-white shadow-soft dark:bg-white dark:text-slate-950'
         : 'text-slate-600 hover:bg-slate-900/5 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white'
@@ -54,7 +60,7 @@ const Header = () => {
       <div className="mx-auto max-w-7xl">
         <div className="glass-panel rounded-[2rem] border border-white/60 bg-white/80 px-4 py-3 shadow-soft backdrop-blur-2xl dark:border-white/10 dark:bg-[#111115]/80 sm:px-5">
           <div className="flex items-center justify-between gap-4">
-            <Link to="/dashboard" className="flex min-w-0 items-center gap-3">
+            <Link to={getHomeRouteForRole(user?.role)} className="flex min-w-0 items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand via-orange-500 to-red-500 text-lg font-bold text-white shadow-glow">
                 Z
               </div>
@@ -104,9 +110,9 @@ const Header = () => {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-full border border-white/60 bg-white/80 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900 transition dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                className={buttonStyles({ variant: 'secondary', size: 'sm' })}
               >
-                Sign out
+                Log out
               </button>
             </div>
 
@@ -152,9 +158,9 @@ const Header = () => {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full rounded-full border border-white/60 bg-white/80 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-white hover:text-slate-900 transition dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+                    className={buttonStyles({ variant: 'secondary', size: 'sm', block: true })}
                   >
-                    Sign out
+                    Log out
                   </button>
                   <div className="grid gap-2">
                     {navItems.map((item) => (

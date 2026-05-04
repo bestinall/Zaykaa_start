@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -10,11 +11,42 @@ import Card from '../components/ui/Card';
 import Button, { buttonStyles } from '../components/ui/Button';
 import SmartImage from '../components/ui/SmartImage';
 
+const loginShowcase = [
+  {
+    id: 'chef-discovery',
+    mode: 'Private chef access',
+    kicker: 'Chef discovery',
+    title: 'Find standout culinary specialists without the back-and-forth.',
+    description:
+      'Compare cuisines, ratings, and availability in one flow, then move from inspiration to a confirmed chef session with less friction.',
+    tags: ['Availability-first', 'Curated chefs', 'Premium hosting'],
+  },
+  {
+    id: 'order-flow',
+    mode: 'Ordering rhythm',
+    kicker: 'Order flow',
+    title: 'A calmer storefront for repeat orders and smarter checkout.',
+    description:
+      'Keep restaurant browsing, cart decisions, coupon checks, and recent order visibility inside one polished path instead of juggling scattered screens.',
+    tags: ['Single cart flow', 'Coupon feedback', 'Recent orders'],
+  },
+  {
+    id: 'chef-studio',
+    mode: 'Studio control',
+    kicker: 'Chef workspace',
+    title: 'Menus, bookings, recipes, and analytics live in one studio.',
+    description:
+      'Chefs return to a workspace built for action, with bookings, food publishing, and performance signals gathered into one operational view.',
+    tags: ['Menu updates', 'Recipe library', 'Performance view'],
+  },
+];
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeShowcaseIndex, setActiveShowcaseIndex] = useState(0);
 
   const { login, isAuthenticated, user } = useAuth();
   const toast = useToast();
@@ -22,9 +54,19 @@ const Login = () => {
   const location = useLocation();
   const successMessage = new URLSearchParams(location.search).get('message');
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveShowcaseIndex((currentIndex) => (currentIndex + 1) % loginShowcase.length);
+    }, 3600);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   if (isAuthenticated) {
     return <Navigate to={user?.role === 'chef' ? '/chef-dashboard' : '/dashboard'} replace />;
   }
+
+  const activeShowcase = loginShowcase[activeShowcaseIndex];
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -80,21 +122,63 @@ const Login = () => {
                 </p>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-3">
-                {[
-                  ['01', 'Chef discovery', 'Find highly rated culinary specialists in minutes.'],
-                  ['02', 'Order flow', 'Browse, add, and checkout with a calmer storefront.'],
-                  ['03', 'Chef analytics', 'Track revenue, booking health, and menu performance.'],
-                ].map(([index, title, description]) => (
-                  <div
-                    key={index}
-                    className="rounded-[1.4rem] border border-white/10 bg-white/10 p-3 backdrop-blur-xl"
-                  >
-                    <p className="text-[10px] font-semibold tracking-[0.24em] text-white/50">{index}</p>
-                    <h2 className="mt-2 text-base font-semibold xl:text-lg">{title}</h2>
-                    <p className="mt-1.5 text-xs leading-5 text-white/70 xl:text-sm xl:leading-6">{description}</p>
+                <div className="rounded-[2rem] border border-white/12 bg-white/10 p-5 shadow-[0_28px_64px_rgba(15,23,42,0.22)] backdrop-blur-xl">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/55">
+                      <span className="inline-flex h-2.5 w-2.5 rounded-full bg-brand shadow-[0_0_18px_rgba(255,107,53,0.75)]" />
+                      Live spotlight
+                    </div>
+                  <div className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/82">
+                    {activeShowcase.mode}
                   </div>
-                ))}
+                </div>
+
+                <div className="relative mt-5 h-[175px]">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activeShowcase.id}
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -18 }}
+                      transition={{ duration: 0.28, ease: 'easeOut' }}
+                      className="absolute inset-0"
+                    >
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/48">
+                        {activeShowcase.kicker}
+                      </p>
+                      <h2 className="mt-3 max-w-lg font-display text-[1.7rem] leading-tight text-white xl:text-[2rem]">
+                        {activeShowcase.title}
+                      </h2>
+                      <p className="mt-4 max-w-xl text-sm leading-7 text-white/78">
+                        {activeShowcase.description}
+                      </p>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-4">
+                  <div className="flex gap-2">
+                    {loginShowcase.map((item, index) => (
+                      <span
+                        key={item.id}
+                        className={`h-2 rounded-full transition-all ${
+                          index === activeShowcaseIndex ? 'w-8 bg-brand' : 'w-2 bg-white/30'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {activeShowcase.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-white/72"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </Card>

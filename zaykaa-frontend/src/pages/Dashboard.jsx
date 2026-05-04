@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import Header from '../components/Common/Header';
 import PageTransition from '../components/ui/PageTransition';
 import Card from '../components/ui/Card';
@@ -9,10 +9,17 @@ import { SkeletonCard } from '../components/ui/Skeleton';
 import SectionHeader from '../components/ui/SectionHeader';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { bookingService } from '../services/booking';
 import { orderService } from '../services/order';
 import { communityService } from '../services/community';
 import { previewChefs, previewCommunityMembers, previewOrders, previewRecipes } from '../data/mockData';
 import { formatCurrency, formatDate, formatDateTime, getInitials, humanize } from '../utils/display';
+import {
+  getChefBookingStorageScope,
+  getStoredChefBookings,
+  mergeChefBookings,
+} from '../utils/userChefBookings';
+import { isFoodLoverRole } from '../utils/roleRoutes';
 
 /* --------------------------------- Icons --------------------------------- */
 
@@ -212,14 +219,98 @@ const NetworkMemberCard = ({ member }) => {
   );
 };
 
+const getChefBookingName = (booking) =>
+  booking.chefName || booking.chef?.name || booking.chefDisplayName || 'Private chef session';
+
+const getChefBookingAmount = (booking) =>
+  Number(booking.amount || booking.totalAmount || booking.price || booking.estimatedTotal || 0);
+
+const getChefBookingGuests = (booking) =>
+  Number(booking.guestCount || booking.guests || booking.partySize || 0);
+
+const getChefBookingNote = (booking) =>
+  booking.menuPreferences ||
+  booking.specialRequests ||
+  booking.dietaryRestrictions ||
+  'Your chef booking request has been captured for follow-up.';
+
+const ChefBookingCard = ({ booking }) => {
+  const amount = getChefBookingAmount(booking);
+  const guestCount = getChefBookingGuests(booking);
+  const chefName = getChefBookingName(booking);
+  const sessionDate = booking.date || booking.createdAt;
+  const locationLabel =
+    booking.chefLocation ||
+    booking.location ||
+    booking.chef?.location ||
+    booking.chef?.city ||
+    booking.chef?.state ||
+    '';
+
+  return (
+    <Card hover={false} className="flex h-full flex-col p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700 dark:bg-white/10 dark:text-slate-200">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand" />
+            {humanize(booking.status || 'pending')}
+          </span>
+          <h3 className="mt-2.5 font-display text-lg leading-snug text-slate-950 dark:text-white line-clamp-1">
+            {chefName}
+          </h3>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            {formatDate(sessionDate)} • {humanize(booking.timeSlot || 'dinner')}
+          </p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            {amount > 0 ? 'Estimate' : 'Guests'}
+          </p>
+          <p className="mt-0.5 text-base font-semibold text-slate-950 dark:text-white">
+            {amount > 0 ? formatCurrency(amount) : `${guestCount} guests`}
+          </p>
+        </div>
+      </div>
+
+      <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300 line-clamp-2">
+        {getChefBookingNote(booking)}
+      </p>
+
+      <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-slate-900/5 pt-4 text-xs dark:border-white/10">
+        {guestCount > 0 && (
+          <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+            <Icon path={icons.users} className="h-3.5 w-3.5" />
+            {guestCount} guests
+          </span>
+        )}
+        {locationLabel && (
+          <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+            <Icon path={icons.pin} className="h-3.5 w-3.5" />
+            {locationLabel}
+          </span>
+        )}
+        {booking.bookingReference && (
+          <span className="rounded-full bg-slate-900/5 px-2.5 py-1 text-[10px] font-semibold text-slate-700 dark:bg-white/10 dark:text-slate-200">
+            {booking.bookingReference}
+          </span>
+        )}
+      </div>
+    </Card>
+  );
+};
+
 /* ------------------------------ Main page ------------------------------- */
 
 const Dashboard = () => {
   const { user } = useAuth();
   const toast = useToast();
+  const isFoodLover = isFoodLoverRole(user?.role);
   const [recentOrders, setRecentOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [previewMode, setPreviewMode] = useState(false);
+  const [chefBookings, setChefBookings] = useState([]);
+  const [chefBookingsLoading, setChefBookingsLoading] = useState(true);
+  const [chefBookingsUsingSavedCopy, setChefBookingsUsingSavedCopy] = useState(false);
   const [networkFeed, setNetworkFeed] = useState({
     chefs: [],
     recipes: [],
@@ -310,6 +401,58 @@ const Dashboard = () => {
     };
   }, [toast]);
 
+  useEffect(() => {
+    let active = true;
+
+    const loadChefBookings = async () => {
+      if (user?.role === 'chef') {
+        if (active) {
+          setChefBookings([]);
+          setChefBookingsLoading(false);
+          setChefBookingsUsingSavedCopy(false);
+        }
+        return;
+      }
+
+      setChefBookingsLoading(true);
+      const savedBookings = getStoredChefBookings(getChefBookingStorageScope(user));
+
+      try {
+        const response = await bookingService.getUserBookings();
+        const liveBookings = response.bookings || [];
+
+        if (!active) {
+          return;
+        }
+
+        const mergedBookings = mergeChefBookings(liveBookings, savedBookings);
+        setChefBookings(mergedBookings);
+        setChefBookingsUsingSavedCopy(liveBookings.length === 0 && mergedBookings.length > 0);
+      } catch (error) {
+        if (!active) {
+          return;
+        }
+
+        setChefBookings(savedBookings);
+        setChefBookingsUsingSavedCopy(savedBookings.length > 0);
+      } finally {
+        if (active) {
+          setChefBookingsLoading(false);
+        }
+      }
+    };
+
+    loadChefBookings();
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  if (user?.role === 'chef') {
+    return <Navigate to="/chef-dashboard" replace />;
+  }
+
   const thirdAction = user?.role === 'chef'
     ? {
         label: 'Chef Studio',
@@ -334,28 +477,30 @@ const Dashboard = () => {
           icon: icons.clock,
         };
 
-  const quickActions = [
-    {
-      label: 'Order Food',
-      title: 'Restaurant discovery',
-      description: 'Browse nearby kitchens, add menu items, and move into a sticky cart flow.',
-      to: '/order',
-      icon: icons.bag,
-      accent: 'from-orange-500 to-red-500',
-    },
-    {
-      label: 'Book Chef',
-      title: 'Private chef experience',
-      description: 'Explore premium chef profiles, filter by cuisine and pricing, and request a slot.',
-      to: '/book-chef',
-      icon: icons.chef,
-      accent: 'from-amber-500 to-orange-500',
-    },
-    {
-      ...thirdAction,
-      accent: 'from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-400',
-    },
-  ];
+  const quickActions = isFoodLover
+    ? [
+        {
+          label: 'Order Food',
+          title: 'Restaurant discovery',
+          description: 'Browse nearby kitchens, add menu items, and move into a sticky cart flow.',
+          to: '/order',
+          icon: icons.bag,
+          accent: 'from-orange-500 to-red-500',
+        },
+        {
+          label: 'Book Chef',
+          title: 'Private chef experience',
+          description: 'Explore premium chef profiles, filter by cuisine and pricing, and request a slot.',
+          to: '/book-chef',
+          icon: icons.chef,
+          accent: 'from-amber-500 to-orange-500',
+        },
+        {
+          ...thirdAction,
+          accent: 'from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-400',
+        },
+      ]
+    : [];
 
   const networkUpdateCount =
     networkFeed.recipes.length + networkFeed.chefs.length + networkFeed.members.length;
@@ -428,48 +573,50 @@ const Dashboard = () => {
         </Card>
 
         {/* ---------------------- QUICK ACTIONS ---------------------- */}
-        <section>
-          <div className="mb-5 flex items-end justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-brand">Quick actions</p>
-              <h2 className="mt-1.5 font-display text-2xl text-slate-950 dark:text-white">Pick where to continue</h2>
+        {quickActions.length > 0 && (
+          <section>
+            <div className="mb-5 flex items-end justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-brand">Quick actions</p>
+                <h2 className="mt-1.5 font-display text-2xl text-slate-950 dark:text-white">Pick where to continue</h2>
+              </div>
             </div>
-          </div>
-          <div className="grid gap-4 lg:grid-cols-3">
-            {quickActions.map((action, index) => (
-              <motion.div
-                key={action.title}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.28, delay: index * 0.06 }}
-              >
-                <Link
-                  to={action.to}
-                  className="glass-panel group relative flex h-full flex-col overflow-hidden rounded-4xl border border-white/60 bg-white/75 p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-elevated dark:border-white/10 dark:bg-[#17171d]/75"
+            <div className="grid gap-4 lg:grid-cols-3">
+              {quickActions.map((action, index) => (
+                <motion.div
+                  key={action.title}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.28, delay: index * 0.06 }}
                 >
-                  <div
-                    className={`mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${action.accent} text-white shadow-soft`}
+                  <Link
+                    to={action.to}
+                    className="glass-panel group relative flex h-full flex-col overflow-hidden rounded-4xl border border-white/60 bg-white/75 p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-elevated dark:border-white/10 dark:bg-[#17171d]/75"
                   >
-                    <Icon path={action.icon} className="h-5 w-5" />
-                  </div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand">
-                    {action.label}
-                  </p>
-                  <h3 className="mt-2 font-display text-xl leading-snug text-slate-950 dark:text-white">
-                    {action.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    {action.description}
-                  </p>
-                  <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-slate-900 transition-all group-hover:gap-2 dark:text-white">
-                    Open experience
-                    <Icon path={icons.arrowRight} className="h-4 w-4" />
-                  </span>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+                    <div
+                      className={`mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${action.accent} text-white shadow-soft`}
+                    >
+                      <Icon path={action.icon} className="h-5 w-5" />
+                    </div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand">
+                      {action.label}
+                    </p>
+                    <h3 className="mt-2 font-display text-xl leading-snug text-slate-950 dark:text-white">
+                      {action.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      {action.description}
+                    </p>
+                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-slate-900 transition-all group-hover:gap-2 dark:text-white">
+                      Open experience
+                      <Icon path={icons.arrowRight} className="h-4 w-4" />
+                    </span>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ---------------------- FOOD NETWORK (stats) ---------------------- */}
         <Card hover={false}>
@@ -588,6 +735,44 @@ const Dashboard = () => {
             )}
           </div>
         </Card>
+
+        {/* ---------------------- CHEF BOOKINGS ---------------------- */}
+        {user?.role !== 'chef' && (
+          <Card hover={false}>
+            <SectionHeader
+              eyebrow="Chef bookings"
+              title="Your booked chefs stay visible here"
+              description="Once you book a chef, the request appears on your dashboard with the dining slot, guest count, and booking status."
+              action={
+                <Link to="/book-chef" className={buttonStyles({ variant: 'secondary', size: 'sm' })}>
+                  Book a chef
+                  <Icon path={icons.arrowRight} className="h-3.5 w-3.5" />
+                </Link>
+              }
+            />
+
+            <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {chefBookingsLoading ? (
+                Array.from({ length: 3 }).map((_, index) => <SkeletonCard key={`chef-booking-skeleton-${index}`} />)
+              ) : chefBookings.length > 0 ? (
+                chefBookings.slice(0, 6).map((booking) => (
+                  <ChefBookingCard key={booking.bookingReference || booking.id} booking={booking} />
+                ))
+              ) : (
+                <p className="col-span-full text-sm text-slate-500 dark:text-slate-400">
+                  No chef bookings yet. The next chef you book will show up here automatically.
+                </p>
+              )}
+            </div>
+
+            {chefBookingsUsingSavedCopy && !chefBookingsLoading && (
+              <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-1.5 text-xs font-medium text-brand-deep dark:text-amber-200">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+                Showing your saved chef bookings while live dashboard sync catches up
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* ---------------------- RECENT ORDERS ---------------------- */}
         <Card hover={false}>

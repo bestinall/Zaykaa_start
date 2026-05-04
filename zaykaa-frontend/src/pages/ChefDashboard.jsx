@@ -8,7 +8,7 @@ import Analytics from '../components/ChefDashboard/Analytics';
 import ChefSidebar from '../components/ChefDashboard/ChefSidebar';
 import PageTransition from '../components/ui/PageTransition';
 import Card from '../components/ui/Card';
-import Skeleton, { SkeletonCard } from '../components/ui/Skeleton';
+import { SkeletonCard } from '../components/ui/Skeleton';
 import SectionHeader from '../components/ui/SectionHeader';
 import { useAuth } from '../context/AuthContext';
 import { chefService } from '../services/chef';
@@ -95,7 +95,7 @@ const ChefDashboard = () => {
         setPreviewFlags((current) => ({ ...current, bookings: true }));
       } else {
         setBookings(items);
-        setPreviewFlags((current) => ({ ...current, bookings: false }));
+        setPreviewFlags((current) => ({ ...current, bookings: response.source === 'preview' }));
       }
     } catch (error) {
       setBookings(previewChefBookings);
@@ -113,7 +113,7 @@ const ChefDashboard = () => {
         setPreviewFlags((current) => ({ ...current, recipes: true }));
       } else {
         setRecipes(items);
-        setPreviewFlags((current) => ({ ...current, recipes: false }));
+        setPreviewFlags((current) => ({ ...current, recipes: response.source === 'preview' }));
       }
     } catch (error) {
       setRecipes(previewRecipes);
@@ -125,7 +125,7 @@ const ChefDashboard = () => {
     try {
       const response = await chefService.getAnalytics();
       setAnalytics({ ...previewAnalytics, ...response });
-      setPreviewFlags((current) => ({ ...current, analytics: false }));
+      setPreviewFlags((current) => ({ ...current, analytics: response.source === 'preview' }));
     } catch (error) {
       setAnalytics(previewAnalytics);
       setPreviewFlags((current) => ({ ...current, analytics: true }));
@@ -142,7 +142,7 @@ const ChefDashboard = () => {
         setPreviewFlags((current) => ({ ...current, menu: true }));
       } else {
         setMenuItems(items);
-        setPreviewFlags((current) => ({ ...current, menu: false }));
+        setPreviewFlags((current) => ({ ...current, menu: response.source === 'preview' }));
       }
     } catch (error) {
       setMenuItems(previewMenuItems);

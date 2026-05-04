@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import { cn } from '../../utils/cn';
+import { buttonStyles } from './Button';
 
 const SunIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
@@ -25,7 +26,8 @@ const ThemeToggle = ({ className }) => {
       whileTap={{ scale: 0.96 }}
       onClick={toggleTheme}
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/80 px-3 py-2 text-sm font-medium text-slate-700 shadow-soft backdrop-blur-xl transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-slate-100 dark:hover:bg-white/10',
+        buttonStyles({ variant: 'secondary', size: 'sm' }),
+        'backdrop-blur-xl',
         className
       )}
       aria-label="Toggle theme"

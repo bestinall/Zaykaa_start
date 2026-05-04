@@ -10,9 +10,39 @@ import RestaurantBrowse from '../components/Order/RestaurantBrowse';
 import MenuDisplay from '../components/Order/MenuDisplay';
 import Cart from '../components/Order/Cart';
 import PageTransition from '../components/ui/PageTransition';
+import { indiaRegionalFoodStates } from '../data/indiaRegionalFoods';
 import { orderService } from '../services/order';
 import { previewRestaurants } from '../data/mockData';
 import { useToast } from '../context/ToastContext';
+
+const DEFAULT_REGIONAL_STATE =
+  indiaRegionalFoodStates.find((region) => region.state === 'Maharashtra')?.state ||
+  indiaRegionalFoodStates[0]?.state ||
+  '';
+
+const restaurantMatchesState = (restaurant, state) => {
+  if (!restaurant || !state) {
+    return false;
+  }
+
+  const locationText = [
+    restaurant.location,
+    restaurant.locationLabel,
+    restaurant.city,
+    restaurant.state,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  const featuredStates = restaurant.featuredStates || [];
+  const dishes = restaurant.dishes || restaurant.menu || [];
+
+  return (
+    featuredStates.includes(state) ||
+    locationText.includes(String(state).toLowerCase()) ||
+    dishes.some((dish) => dish.originState === state)
+  );
+};
 
 const OrderPage = () => {
   const toast = useToast();
@@ -23,6 +53,8 @@ const OrderPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
   const [selectedCuisine, setSelectedCuisine] = useState('All');
+  const [selectedState, setSelectedState] = useState(DEFAULT_REGIONAL_STATE);
+  const [browseMode, setBrowseMode] = useState('state');
 
   const deferredLocation = useDeferredValue(location);
   const deferredSearch = useDeferredValue(searchQuery);
@@ -77,7 +109,7 @@ const OrderPage = () => {
     [restaurants]
   );
 
-  const filteredRestaurants = useMemo(() => {
+  const baseFilteredRestaurants = useMemo(() => {
     return restaurants.filter((restaurant) => {
       const matchesCuisine =
         selectedCuisine === 'All'
@@ -94,6 +126,63 @@ const OrderPage = () => {
       return matchesCuisine && matchesSearch;
     });
   }, [restaurants, selectedCuisine, deferredSearch]);
+
+  const stateRestaurantCount = useMemo(
+    () =>
+      selectedState
+        ? baseFilteredRestaurants.filter((restaurant) => restaurantMatchesState(restaurant, selectedState)).length
+        : 0,
+    [baseFilteredRestaurants, selectedState]
+  );
+
+  const stateDishGroups = useMemo(() => {
+    if (!selectedState) {
+      return [];
+    }
+
+    return baseFilteredRestaurants
+      .map((restaurant) => {
+        const dishes = (restaurant.dishes || restaurant.menu || []).filter(
+          (dish) => dish.originState === selectedState
+        );
+
+        if (dishes.length === 0) {
+          return null;
+        }
+
+        return {
+          ...restaurant,
+          stateDishes: dishes,
+        };
+      })
+      .filter(Boolean)
+      .sort((first, second) => {
+        if (Number(second.rating || 0) !== Number(first.rating || 0)) {
+          return Number(second.rating || 0) - Number(first.rating || 0);
+        }
+
+        return first.name.localeCompare(second.name);
+      });
+  }, [baseFilteredRestaurants, selectedState]);
+
+  const filteredRestaurants = useMemo(() => {
+    if (!selectedState) {
+      return baseFilteredRestaurants;
+    }
+
+    const matching = [];
+    const others = [];
+
+    baseFilteredRestaurants.forEach((restaurant) => {
+      if (restaurantMatchesState(restaurant, selectedState)) {
+        matching.push(restaurant);
+      } else {
+        others.push(restaurant);
+      }
+    });
+
+    return [...matching, ...others];
+  }, [baseFilteredRestaurants, selectedState]);
 
   useEffect(() => {
     if (!selectedRestaurant && filteredRestaurants.length > 0) {
@@ -119,34 +208,63 @@ const OrderPage = () => {
     }
   }, [filteredRestaurants, selectedRestaurant]);
 
+  useEffect(() => {
+    if (!selectedState || filteredRestaurants.length === 0) {
+      return;
+    }
+
+    const firstMatch = filteredRestaurants.find((restaurant) =>
+      restaurantMatchesState(restaurant, selectedState)
+    );
+
+    if (!firstMatch) {
+      return;
+    }
+
+    if (!selectedRestaurant || !restaurantMatchesState(selectedRestaurant, selectedState)) {
+      setSelectedRestaurant(firstMatch);
+    }
+  }, [filteredRestaurants, selectedRestaurant, selectedState]);
+
   return (
     <PageTransition className="app-shell">
       <Header />
-      <div className="content-shell space-y-8">
-        <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-          <div className="space-y-6">
-            <RestaurantBrowse
-              restaurants={filteredRestaurants}
-              loading={loading}
-              previewMode={previewMode}
-              searchQuery={searchQuery}
-              onSearchQueryChange={setSearchQuery}
-              location={location}
-              onLocationChange={setLocation}
-              selectedCuisine={selectedCuisine}
-              cuisines={cuisines}
-              onCuisineChange={setSelectedCuisine}
-              selectedRestaurant={selectedRestaurant}
-              onSelectRestaurant={(restaurant) =>
-                startTransition(() => {
-                  setSelectedRestaurant(restaurant);
-                })
-              }
-            />
-            <MenuDisplay restaurant={selectedRestaurant} />
-          </div>
-          <Cart />
-        </div>
+      <div className="content-shell space-y-6">
+        <RestaurantBrowse
+          restaurants={filteredRestaurants}
+          loading={loading}
+          previewMode={previewMode}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          location={location}
+          onLocationChange={setLocation}
+          selectedCuisine={selectedCuisine}
+          cuisines={cuisines}
+          onCuisineChange={setSelectedCuisine}
+          browseMode={browseMode}
+          onBrowseModeChange={setBrowseMode}
+          selectedState={selectedState}
+          onStateSelect={setSelectedState}
+          regionalShowcase={indiaRegionalFoodStates}
+          stateRestaurantCount={stateRestaurantCount}
+          stateDishGroups={stateDishGroups}
+          selectedRestaurant={selectedRestaurant}
+          onSelectRestaurant={(restaurant) =>
+            startTransition(() => {
+              setSelectedRestaurant(restaurant);
+            })
+          }
+          onOpenRestaurantMenu={(restaurant) =>
+            startTransition(() => {
+              setSelectedRestaurant(restaurant);
+              setBrowseMode('restaurant');
+            })
+          }
+        />
+        {browseMode === 'restaurant' && (
+          <MenuDisplay restaurant={selectedRestaurant} selectedState={selectedState} />
+        )}
+        <Cart />
       </div>
     </PageTransition>
   );

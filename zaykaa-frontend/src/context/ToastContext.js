@@ -12,14 +12,35 @@ import { cn } from '../utils/cn';
 const ToastContext = createContext(null);
 
 const variants = {
-  success:
-    'border-emerald-200/70 bg-emerald-50/90 text-emerald-950 dark:border-emerald-500/20 dark:bg-emerald-500/12 dark:text-emerald-50',
-  info: 'border-slate-200/70 bg-white/90 text-slate-900 dark:border-white/10 dark:bg-slate-900/90 dark:text-slate-50',
-  error:
-    'border-rose-200/70 bg-rose-50/90 text-rose-950 dark:border-rose-500/20 dark:bg-rose-500/12 dark:text-rose-50',
+  success: {
+    container:
+      'border-emerald-300/90 bg-emerald-50/98 text-emerald-950 shadow-[0_20px_48px_rgba(6,95,70,0.18)] dark:border-emerald-400/45 dark:bg-emerald-950/96 dark:text-emerald-50',
+    description: 'text-emerald-900 dark:text-emerald-100/92',
+    accent: 'bg-emerald-600 dark:bg-emerald-300',
+    close:
+      'border-emerald-300/80 bg-white/75 text-emerald-900 hover:bg-white dark:border-emerald-400/25 dark:bg-white/10 dark:text-emerald-100 dark:hover:bg-white/16',
+  },
+  info: {
+    container:
+      'border-slate-300/90 bg-white/98 text-slate-950 shadow-[0_20px_48px_rgba(15,23,42,0.16)] dark:border-slate-600/85 dark:bg-slate-950/96 dark:text-slate-50',
+    description: 'text-slate-700 dark:text-slate-200/92',
+    accent: 'bg-sky-600 dark:bg-sky-300',
+    close:
+      'border-slate-300/80 bg-slate-50/90 text-slate-700 hover:bg-white hover:text-slate-950 dark:border-slate-600/70 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/16 dark:hover:text-white',
+  },
+  error: {
+    container:
+      'border-rose-300/90 bg-rose-50/98 text-rose-950 shadow-[0_20px_48px_rgba(159,18,57,0.18)] dark:border-rose-400/45 dark:bg-rose-950/96 dark:text-rose-50',
+    description: 'text-rose-900 dark:text-rose-100/92',
+    accent: 'bg-rose-600 dark:bg-rose-300',
+    close:
+      'border-rose-300/80 bg-white/75 text-rose-900 hover:bg-white dark:border-rose-400/25 dark:bg-white/10 dark:text-rose-100 dark:hover:bg-white/16',
+  },
 };
 
 const ToastItem = ({ toast, onClose }) => {
+  const variant = variants[toast.variant] || variants.info;
+
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       onClose(toast.id);
@@ -35,23 +56,25 @@ const ToastItem = ({ toast, onClose }) => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -16, scale: 0.96 }}
       transition={{ duration: 0.22 }}
+      role="status"
+      aria-live="polite"
       className={cn(
-        'w-full max-w-sm rounded-[1.75rem] border px-4 py-4 shadow-glow backdrop-blur-2xl',
-        variants[toast.variant] || variants.info
+        'w-full max-w-sm rounded-[1.75rem] border px-4 py-4 backdrop-blur-2xl',
+        variant.container
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-brand" />
+        <div className={cn('mt-1 h-2.5 w-2.5 shrink-0 rounded-full', variant.accent)} />
         <div className="min-w-0 flex-1">
           {toast.title && <p className="text-sm font-semibold">{toast.title}</p>}
           {toast.description && (
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{toast.description}</p>
+            <p className={cn('mt-1 text-sm leading-6', variant.description)}>{toast.description}</p>
           )}
         </div>
         <button
           type="button"
           onClick={() => onClose(toast.id)}
-          className="rounded-full border border-black/5 p-1 text-slate-500 transition hover:text-slate-900 dark:border-white/10 dark:text-slate-300 dark:hover:text-white"
+          className={cn('rounded-full border p-1.5 transition', variant.close)}
           aria-label="Close notification"
         >
           <svg viewBox="0 0 20 20" className="h-4 w-4 fill-current">

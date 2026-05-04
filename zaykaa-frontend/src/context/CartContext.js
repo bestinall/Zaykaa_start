@@ -45,12 +45,19 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (dish, restaurantId, restaurantName) => {
     setCart(prev => {
+      const dishWithSource = {
+        ...dish,
+        restaurantId,
+        restaurantName,
+        orderSource: dish.orderSource || 'restaurant',
+      };
+
       // If switching restaurants, clear cart
       if (prev.restaurantId && prev.restaurantId !== restaurantId) {
         return {
           restaurantId,
           restaurantName,
-          items: [{ ...dish, quantity: 1 }],
+          items: [{ ...dishWithSource, quantity: 1 }],
         };
       }
 
@@ -74,7 +81,7 @@ export const CartProvider = ({ children }) => {
         ...prev,
         restaurantId,
         restaurantName,
-        items: [...prev.items, { ...dish, quantity: 1 }],
+        items: [...prev.items, { ...dishWithSource, quantity: 1 }],
       };
     });
   };
