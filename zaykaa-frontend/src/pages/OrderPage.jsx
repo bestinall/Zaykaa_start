@@ -71,11 +71,16 @@ const OrderPage = () => {
         });
         const items = response.restaurants || [];
 
+        // Check if backend data has proper dish structure with originState
+        const hasOriginState = items.some((r) =>
+          (r.dishes || r.menu || []).some((d) => d.originState)
+        );
+
         if (!active) {
           return;
         }
 
-        if (items.length === 0) {
+        if (items.length === 0 || !hasOriginState) {
           setRestaurants(previewRestaurants);
           setPreviewMode(true);
         } else {
