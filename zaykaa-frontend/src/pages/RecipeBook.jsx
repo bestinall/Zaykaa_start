@@ -52,9 +52,6 @@ const createEmptyRecipeForm = () => ({
   steps: [''],
 });
 
-const getOriginLabel = (recipe) =>
-  [recipe.originRegion, recipe.originState].filter(Boolean).join(', ') || 'Profile-linked origin';
-
 const mapRecipeToForm = (recipe) => ({
   title: recipe.title || recipe.name || '',
   description: recipe.description || '',

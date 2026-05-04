@@ -328,13 +328,27 @@ export default function ChatBot() {
                     color: t.text,
                     }}
                 >
-                    <div style={styles.favsHeader}>
+                    <div
+                      style={{
+                        ...styles.favsHeader,
+                        background: dark
+                          ? "rgba(255,255,255,0.02)"
+                          : "linear-gradient(180deg, #fff7ed 0%, #ffffff 100%)",
+                        borderBottomColor: dark ? "rgba(255,255,255,0.1)" : "rgba(194,65,12,0.14)",
+                      }}
+                    >
                     <div style={{ fontWeight: 700, fontSize: 15 }}>
                         ❤️ Saved Recipes ({favs.length})
                     </div>
                     <button
                         onClick={() => setShowFavs(false)}
-                        style={styles.headerBtn}
+                        style={{
+                          ...styles.favsCloseBtn,
+                          background: dark ? "rgba(255,255,255,0.08)" : "#fff2eb",
+                          color: dark ? "#fff7ed" : "#c2410c",
+                          borderColor: dark ? "rgba(255,255,255,0.12)" : "#fdba74",
+                          boxShadow: dark ? "none" : "0 6px 16px rgba(194,65,12,0.12)",
+                        }}
                         title="Close"
                     >
                         ✕
@@ -629,6 +643,20 @@ const styles = {
     alignItems: "center",
     padding: "12px 16px",
     borderBottom: "1px solid rgba(128,128,128,0.2)",
+    transition: "background 0.25s, border-color 0.25s",
+  },
+  favsCloseBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: "50%",
+    border: "1px solid",
+    cursor: "pointer",
+    fontSize: 15,
+    fontWeight: 700,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s",
   },
   favsList: {
     flex: 1,

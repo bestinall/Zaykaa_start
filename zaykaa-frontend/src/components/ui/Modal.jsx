@@ -18,7 +18,7 @@ const Modal = ({ isOpen, onClose, title, description, size = 'lg', children }) =
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/50 p-4 backdrop-blur-md sm:items-center sm:p-6"
+          className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/68 p-4 backdrop-blur-md dark:bg-black/76 sm:items-center sm:p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -31,21 +31,21 @@ const Modal = ({ isOpen, onClose, title, description, size = 'lg', children }) =
             transition={{ duration: 0.24 }}
             onClick={(event) => event.stopPropagation()}
             className={cn(
-              'glass-panel relative max-h-[90vh] w-full overflow-hidden rounded-[2rem] border border-white/60 bg-white/90 shadow-elevated dark:border-white/10 dark:bg-[#121218]/95',
+              'relative max-h-[90vh] w-full overflow-hidden rounded-[2rem] border border-slate-200/90 bg-white text-slate-950 shadow-[0_32px_90px_rgba(15,23,42,0.22)] dark:border-slate-700/85 dark:bg-slate-950 dark:text-slate-50',
               sizeClasses[size] || sizeClasses.lg
             )}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-black/5 px-6 py-5 dark:border-white/10">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-800">
               <div>
                 {title && <h2 className="font-display text-2xl text-slate-950 dark:text-white">{title}</h2>}
                 {description && (
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{description}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-700 dark:text-slate-300">{description}</p>
                 )}
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-black/5 p-2 text-slate-500 transition hover:text-slate-900 dark:border-white/10 dark:text-slate-300 dark:hover:text-white"
+                className="rounded-full border border-slate-200 bg-slate-50 p-2 text-slate-600 transition hover:bg-white hover:text-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                 aria-label="Close modal"
               >
                 <svg viewBox="0 0 20 20" className="h-5 w-5 fill-current">

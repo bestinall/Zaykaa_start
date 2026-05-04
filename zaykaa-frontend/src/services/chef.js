@@ -1,4 +1,18 @@
 import api from './api';
+import { previewAnalytics, previewChefBookings, previewRecipes } from '../data/mockData';
+import {
+  buildStoredChefAnalyticsForUser,
+  ensureStoredChefBookingsForUser,
+  ensureStoredManagedRecipesForUser,
+  getStoredChefBookingsForUser,
+  getStoredManagedRecipesForUser,
+  getStoredSessionUser,
+  syncStoredChefBookingsForUser,
+  syncStoredManagedRecipesForUser,
+  updateStoredChefBookingStatusForUser,
+  upsertStoredManagedRecipeForUser,
+  deleteStoredManagedRecipeForUser,
+} from '../utils/chefStudioStorage';
 
 const MOCK_MODE = false;
 
@@ -12,16 +26,46 @@ const normalizeRecipe = (recipe = {}) => ({
 
 export const chefService = {
   getChefBookings: async (status = 'all') => {
+    const user = getStoredSessionUser();
+
     if (MOCK_MODE) {
       await new Promise(resolve => setTimeout(resolve, 600));
-      return { bookings: [] };
+      return { bookings: ensureStoredChefBookingsForUser(user, previewChefBookings), source: 'preview' };
     }
 
     try {
       const response = await api.get('/chef/bookings', { params: { status } });
-      return unwrapResponse(response);
+      const data = unwrapResponse(response);
+      const bookings = data.bookings || [];
+
+      if (bookings.length > 0) {
+        return {
+          ...data,
+          bookings: syncStoredChefBookingsForUser(user, bookings),
+          source: 'live',
+        };
+      }
+
+      const storedBookings = getStoredChefBookingsForUser(user);
+      if (storedBookings.length > 0) {
+        return { ...data, bookings: storedBookings, source: 'local' };
+      }
+
+      return {
+        ...data,
+        bookings: ensureStoredChefBookingsForUser(user, previewChefBookings),
+        source: 'preview',
+      };
     } catch (error) {
-      throw error;
+      const storedBookings = getStoredChefBookingsForUser(user);
+      if (storedBookings.length > 0) {
+        return { bookings: storedBookings, source: 'local' };
+      }
+
+      return {
+        bookings: ensureStoredChefBookingsForUser(user, previewChefBookings),
+        source: 'preview',
+      };
     }
   },
 
@@ -40,41 +84,96 @@ export const chefService = {
   },
 
   updateBookingStatus: async (bookingId, status) => {
+    const user = getStoredSessionUser();
+
     if (MOCK_MODE) {
       await new Promise(resolve => setTimeout(resolve, 500));
-      return { message: `Booking status updated to ${status}` };
+      return {
+        booking: updateStoredChefBookingStatusForUser(user, bookingId, status),
+        message: `Booking status updated to ${status}`,
+        source: 'local',
+      };
     }
 
     try {
       const response = await api.patch(`/chef/bookings/${bookingId}/status`, { status });
-      return unwrapResponse(response);
+      const data = unwrapResponse(response);
+      updateStoredChefBookingStatusForUser(user, bookingId, status);
+      return {
+        ...data,
+        source: 'live',
+      };
     } catch (error) {
+      const updatedBooking = updateStoredChefBookingStatusForUser(user, bookingId, status);
+      if (updatedBooking) {
+        return {
+          booking: updatedBooking,
+          message: `Booking status updated to ${status}`,
+          source: 'local',
+        };
+      }
+
       throw error;
     }
   },
 
   getChefRecipes: async () => {
+    const user = getStoredSessionUser();
+
     if (MOCK_MODE) {
       await new Promise(resolve => setTimeout(resolve, 600));
-      return { recipes: [] };
+      return { recipes: ensureStoredManagedRecipesForUser(user, previewRecipes.slice(0, 3)), source: 'preview' };
     }
 
     try {
       const response = await api.get('/chef/recipes');
       const data = unwrapResponse(response);
+      const recipes = (data.recipes || []).map(normalizeRecipe);
+
+      if (recipes.length > 0) {
+        return {
+          ...data,
+          recipes: syncStoredManagedRecipesForUser(user, recipes),
+          source: 'live',
+        };
+      }
+
+      const storedRecipes = getStoredManagedRecipesForUser(user);
+      if (storedRecipes.length > 0) {
+        return {
+          ...data,
+          recipes: storedRecipes,
+          source: 'local',
+        };
+      }
+
       return {
         ...data,
-        recipes: (data.recipes || []).map(normalizeRecipe),
+        recipes: ensureStoredManagedRecipesForUser(user, previewRecipes.slice(0, 3)),
+        source: 'preview',
       };
     } catch (error) {
-      throw error;
+      const storedRecipes = getStoredManagedRecipesForUser(user);
+      if (storedRecipes.length > 0) {
+        return { recipes: storedRecipes, source: 'local' };
+      }
+
+      return {
+        recipes: ensureStoredManagedRecipesForUser(user, previewRecipes.slice(0, 3)),
+        source: 'preview',
+      };
     }
   },
 
   addRecipe: async (recipeData) => {
+    const user = getStoredSessionUser();
+
     if (MOCK_MODE) {
       await new Promise(resolve => setTimeout(resolve, 800));
-      return { recipe: recipeData };
+      return {
+        recipe: upsertStoredManagedRecipeForUser(user, normalizeRecipe(recipeData)),
+        source: 'local',
+      };
     }
 
     try {
@@ -83,23 +182,35 @@ export const chefService = {
       if (data.recipe) {
         data.recipe = normalizeRecipe(data.recipe);
       }
-      return data;
+      return {
+        ...data,
+        recipe: upsertStoredManagedRecipeForUser(user, data.recipe || normalizeRecipe(recipeData)),
+        source: 'live',
+      };
     } catch (error) {
-      throw error;
+      return {
+        recipe: upsertStoredManagedRecipeForUser(user, normalizeRecipe(recipeData)),
+        source: 'local',
+      };
     }
   },
 
   deleteRecipe: async (recipeId) => {
+    const user = getStoredSessionUser();
+
     if (MOCK_MODE) {
       await new Promise(resolve => setTimeout(resolve, 500));
-      return { message: 'Recipe deleted' };
+      deleteStoredManagedRecipeForUser(user, recipeId);
+      return { message: 'Recipe deleted', source: 'local' };
     }
 
     try {
       const response = await api.delete(`/chef/recipes/${recipeId}`);
-      return unwrapResponse(response);
+      deleteStoredManagedRecipeForUser(user, recipeId);
+      return { ...unwrapResponse(response), source: 'live' };
     } catch (error) {
-      throw error;
+      deleteStoredManagedRecipeForUser(user, recipeId);
+      return { message: 'Recipe deleted', source: 'local' };
     }
   },
 
@@ -122,23 +233,37 @@ export const chefService = {
   },
 
   getAnalytics: async () => {
+    const user = getStoredSessionUser();
+
     if (MOCK_MODE) {
       await new Promise(resolve => setTimeout(resolve, 600));
       return {
-        totalBookings: 0,
-        totalEarnings: 0,
-        averageRating: 0,
-        totalReviews: 0,
-        upcomingBookings: 0,
-        completedBookings: 0,
+        ...(buildStoredChefAnalyticsForUser(user, previewAnalytics) || previewAnalytics),
+        source: 'preview',
       };
     }
 
     try {
       const response = await api.get('/chef/analytics');
-      return unwrapResponse(response);
+      const data = unwrapResponse(response);
+      const hasLiveMetrics =
+        Number(data.totalBookings || 0) > 0 ||
+        Number(data.totalEarnings || 0) > 0 ||
+        Number(data.completedBookings || 0) > 0;
+
+      if (hasLiveMetrics) {
+        return { ...data, source: 'live' };
+      }
+
+      const storedAnalytics = buildStoredChefAnalyticsForUser(user, previewAnalytics);
+      return storedAnalytics
+        ? { ...storedAnalytics, source: 'local' }
+        : { ...previewAnalytics, source: 'preview' };
     } catch (error) {
-      throw error;
+      const storedAnalytics = buildStoredChefAnalyticsForUser(user, previewAnalytics);
+      return storedAnalytics
+        ? { ...storedAnalytics, source: 'local' }
+        : { ...previewAnalytics, source: 'preview' };
     }
   },
 };

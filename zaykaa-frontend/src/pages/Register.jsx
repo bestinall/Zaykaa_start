@@ -156,14 +156,25 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
 
   const { isAuthenticated, user } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveFeatureIndex((currentIndex) => (currentIndex + 1) % roles.length);
+    }, 3800);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   if (isAuthenticated) {
     return <Navigate to={user?.role === 'chef' ? '/chef-dashboard' : '/dashboard'} replace />;
   }
+
+  const activeFeature = roles[activeFeatureIndex];
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -171,6 +182,19 @@ const Register = () => {
       ...currentData,
       [name]: value,
     }));
+  };
+
+  const handleRoleSelect = (roleValue) => {
+    const matchingIndex = roles.findIndex((role) => role.value === roleValue);
+
+    setFormData((currentData) => ({
+      ...currentData,
+      role: roleValue,
+    }));
+
+    if (matchingIndex >= 0) {
+      setActiveFeatureIndex(matchingIndex);
+    }
   };
 
   const validateForm = () => {
@@ -261,22 +285,39 @@ const Register = () => {
                 </p>
               </div>
 
-              <div className="grid gap-2.5 sm:grid-cols-2">
-                {roles.map((role) => (
-                  <div
-                    key={role.value}
-                    className={cn(
-                      'rounded-[1.2rem] border p-2.5 backdrop-blur-xl transition',
-                      formData.role === role.value
-                        ? 'border-brand/70 bg-brand/20 shadow-glow'
-                        : 'border-white/10 bg-white/10'
-                    )}
-                    data-testid={`info-panel-role-${role.value}`}
-                  >
-                    <p className="text-sm font-semibold xl:text-base">{role.title}</p>
-                    <p className="mt-1 text-xs leading-5 text-white/70 xl:text-sm xl:leading-5">{role.description}</p>
+              <div className="max-w-xl">
+                <div className="inline-flex items-center rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-white/75 backdrop-blur-xl">
+                  Feature spotlight
+                </div>
+
+                <div className="mt-5 h-[250px] rounded-[2rem] border border-white/12 bg-white/10 p-6 shadow-[0_28px_64px_rgba(15,23,42,0.22)] backdrop-blur-xl">
+                  <div className="flex h-full flex-col">
+                    <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/55">
+                      <span className="inline-flex h-2.5 w-2.5 rounded-full bg-brand shadow-[0_0_18px_rgba(255,107,53,0.75)]" />
+                      Role highlight
+                    </div>
+
+                    <div className="relative mt-5 h-[150px]">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={activeFeature.value}
+                          initial={{ opacity: 0, y: 18 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -18 }}
+                          transition={{ duration: 0.28, ease: 'easeOut' }}
+                          className="absolute inset-0"
+                        >
+                          <h2 className="font-display text-3xl leading-tight text-white xl:text-[2.8rem]">
+                            {activeFeature.title}
+                          </h2>
+                          <p className="mt-4 max-w-md text-sm leading-7 text-white/78 xl:text-base">
+                            {activeFeature.description}
+                          </p>
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </Card>
@@ -336,12 +377,7 @@ const Register = () => {
                   </p>
                   <RoleDropdown
                     value={formData.role}
-                    onChange={(roleValue) =>
-                      setFormData((currentData) => ({
-                        ...currentData,
-                        role: roleValue,
-                      }))
-                    }
+                    onChange={handleRoleSelect}
                     roles={roles}
                   />
                 </div>

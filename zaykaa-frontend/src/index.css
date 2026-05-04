@@ -23,10 +23,15 @@
 
   body {
     @apply min-h-screen bg-brand-cream text-slate-900 antialiased transition-colors duration-300 dark:text-slate-100;
+    background-color: var(--page-bg-end);
     background-image:
       radial-gradient(circle at top left, rgba(255, 107, 53, 0.15), transparent 28%),
       radial-gradient(circle at top right, rgba(255, 177, 66, 0.12), transparent 24%),
       linear-gradient(180deg, var(--page-bg), var(--page-bg-end));
+    background-position: left top, right top, center center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 1100px 1100px, 1000px 1000px, 100% 100%;
+    background-attachment: fixed, fixed, fixed;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;

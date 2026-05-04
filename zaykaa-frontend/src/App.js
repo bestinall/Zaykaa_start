@@ -10,11 +10,13 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ChefBookingPage from './pages/ChefBookingPage';
 import OrderPage from './pages/OrderPage';
+import Checkout from './pages/Checkout';
 import ChefDashboard from './pages/ChefDashboard';
 import RecipeBook from './pages/RecipeBook';
 import Card from './components/ui/Card';
 import Skeleton from './components/ui/Skeleton';
 import ChatBot from "./components/Bot/ChatBot";
+import { getHomeRouteForRole } from './utils/roleRoutes';
 
 
 const ProtectedRoute = ({ children, requiredRole, requiredRoles }) => {
@@ -43,10 +45,15 @@ const ProtectedRoute = ({ children, requiredRole, requiredRoles }) => {
   const allowedRoles = requiredRoles || (requiredRole ? [requiredRole] : null);
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to={getHomeRouteForRole(user?.role)} replace />;
   }
 
   return children;
+};
+
+const RoleHomeRedirect = () => {
+  const { user } = useAuth();
+  return <Navigate to={getHomeRouteForRole(user?.role)} replace />;
 };
 
 const AnimatedRoutes = () => {
@@ -88,7 +95,7 @@ const AnimatedRoutes = () => {
         <Route
           path="/book-chef"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="user">
               <ChefBookingPage />
             </ProtectedRoute>
           }
@@ -97,13 +104,29 @@ const AnimatedRoutes = () => {
         <Route
           path="/order"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="user">
               <OrderPage />
             </ProtectedRoute>
           }
         />
 
-        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route
+          path="/payment"
+          element={
+            <ProtectedRoute requiredRole="user">
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <RoleHomeRedirect />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </AnimatePresence>
   );

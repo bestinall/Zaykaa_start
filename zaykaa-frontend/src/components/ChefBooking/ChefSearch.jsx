@@ -10,7 +10,7 @@ import { previewChefs } from '../../data/mockData';
 import ChefCard from './ChefCard';
 import Card from '../ui/Card';
 import FloatingInput from '../ui/FloatingInput';
-import Skeleton, { SkeletonCard } from '../ui/Skeleton';
+import { SkeletonCard } from '../ui/Skeleton';
 import SectionHeader from '../ui/SectionHeader';
 import { useToast } from '../../context/ToastContext';
 
