@@ -1,6 +1,6 @@
-# Zaykaa Start
+# Zaykaa - The Homely Cravings
 
-Zaykaa Start is a full-stack food platform that combines:
+Zaykaa is a full-stack food platform that combines:
 
 - account registration and JWT-based authentication
 - chef discovery, availability lookup, and at-home chef bookings
