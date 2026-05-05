@@ -332,8 +332,8 @@ const Dashboard = () => {
         }
 
         if (orders.length === 0) {
-          setRecentOrders(previewOrders);
-          setPreviewMode(true);
+          setRecentOrders([]);
+          setPreviewMode(false);
         } else {
           setRecentOrders(orders);
           setPreviewMode(false);
@@ -791,6 +791,11 @@ const Dashboard = () => {
           <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {ordersLoading
               ? Array.from({ length: 3 }).map((_, index) => <SkeletonCard key={index} />)
+              : recentOrders.length === 0 ? (
+                  <p className="col-span-full text-sm text-slate-500 dark:text-slate-400">
+                    No recent food orders yet. The next order you place will appear here automatically.
+                  </p>
+                )
               : recentOrders.map((order) => (
                   <Card key={order.id} hover={false} className="flex h-full flex-col p-5">
                     <div className="flex items-start justify-between gap-3">

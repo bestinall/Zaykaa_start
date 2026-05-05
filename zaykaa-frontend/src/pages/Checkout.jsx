@@ -167,16 +167,19 @@ const Checkout = () => {
         selectedMethod === 'cod' ? 'Order confirmed' : 'Mock payment successful',
         `${finalDraft.restaurantName || 'Your order'} is confirmed.`
       );
-    } catch {
-      toast.success(
-        selectedMethod === 'cod' ? 'Order confirmed' : 'Mock payment successful',
-        'This sandbox flow does not charge real money.'
-      );
-    } finally {
+
       clearCart();
       clearPaymentDraft();
-      setProcessing(false);
       navigate('/dashboard');
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Your payment was simulated, but the order could not be saved. Please try again.';
+
+      toast.error('Order not saved', errorMessage);
+    } finally {
+      setProcessing(false);
     }
   };
 
