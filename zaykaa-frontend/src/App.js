@@ -17,7 +17,7 @@ import Card from './components/ui/Card';
 import Skeleton from './components/ui/Skeleton';
 import ChatBot from "./components/Bot/ChatBot";
 import { getHomeRouteForRole } from './utils/roleRoutes';
-
+import DeliveryAgentDashboard from './pages/DeliveryAgentDashboard';
 
 const ProtectedRoute = ({ children, requiredRole, requiredRoles }) => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -127,7 +127,12 @@ const AnimatedRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/delivery-dashboard"
+  element={<DeliveryAgentDashboard />}
+/>
       </Routes>
+      
     </AnimatePresence>
   );
 };
