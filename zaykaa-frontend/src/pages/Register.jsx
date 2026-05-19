@@ -150,7 +150,7 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user',
+    role: 'role',
     nativeState: '',
     nativeRegion: '',
   });
