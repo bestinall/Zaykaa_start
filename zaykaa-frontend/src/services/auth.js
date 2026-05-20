@@ -23,13 +23,14 @@ export const authService = {
 
     try {
       const payload = {
-  name: userData.name,
-  email: userData.email,
-  password: userData.password,
-  role: userData.role,
-  nativeState: userData.nativeState,
-  nativeRegion: userData.nativeRegion,
-};
+        ...userData,
+        full_name: userData.full_name || userData.name,
+        native_state: userData.native_state || userData.nativeState,
+        native_region: userData.native_region || userData.nativeRegion,
+      };
+      delete payload.name;
+      delete payload.nativeState;
+      delete payload.nativeRegion;
       const response = await api.post('/auth/register', payload);
       const data = unwrapResponse(response);
       if (data.user) {

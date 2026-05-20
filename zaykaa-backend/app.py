@@ -24,7 +24,6 @@ encoded_password = quote(db_password, safe='')
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     f'mysql+pymysql://{db_user}:{encoded_password}@{db_host}/{db_name}'
 )
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///zaykaa.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
