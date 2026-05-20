@@ -91,7 +91,10 @@ class GeminiService:
                     response = self.client.models.generate_content(
                         model=model_name,
                         contents=contents,
-                        config=self.generate_config,
+                        config=types.GenerateContentConfig(
+                            max_output_tokens=2048,      # bump from default
+                            temperature=0.7,
+                        ),
                     )
                     return response.text or "I couldn't generate a response — try rephrasing?"
                 except genai_errors.ServerError as e:

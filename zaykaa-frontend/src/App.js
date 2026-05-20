@@ -17,6 +17,9 @@ import Card from './components/ui/Card';
 import Skeleton from './components/ui/Skeleton';
 import ChatBot from "./components/Bot/ChatBot";
 import { getHomeRouteForRole } from './utils/roleRoutes';
+// 1. Add the import statement at the top along with your other pages:
+import ZaykaaVlogDashboard from './pages/ZaykaaVlogDashboard';
+
 
 
 const ProtectedRoute = ({ children, requiredRole, requiredRoles }) => {
@@ -117,6 +120,12 @@ const AnimatedRoutes = () => {
               <Checkout />
             </ProtectedRoute>
           }
+        />
+
+        <Route path="/vlogger-dashboard"
+         element={
+         <ZaykaaVlogDashboard />
+         } 
         />
 
         <Route

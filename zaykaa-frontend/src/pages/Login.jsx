@@ -62,9 +62,15 @@ const Login = () => {
     return () => window.clearInterval(intervalId);
   }, []);
 
-  if (isAuthenticated) {
-    return <Navigate to={user?.role === 'chef' ? '/chef-dashboard' : '/dashboard'} replace />;
+if (isAuthenticated) {
+  if (user?.role === 'chef') {
+    return <Navigate to="/chef-dashboard" replace />;
+  } else if (user?.role === 'vlogger') {
+    return <Navigate to="/vlogger-dashboard" replace />;
+  } else {
+    return <Navigate to="/dashboard" replace />;
   }
+}
 
   const activeShowcase = loginShowcase[activeShowcaseIndex];
 
@@ -74,11 +80,19 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await authService.login(email, password);
-      login(response.token, response.user);
-      toast.success('Signed in', 'Your workspace is ready.');
-      navigate(response.user.role === 'chef' ? '/chef-dashboard' : '/dashboard');
-    } catch (err) {
+    const response = await authService.login(email, password);
+    login(response.token, response.user);
+    toast.success('Signed in', 'Your workspace is ready.');
+    
+    // Dynamic path routing based on login authority roles
+    if (response.user.role === 'chef') {
+      navigate('/chef-dashboard');
+    } else if (response.user.role === 'vlogger') {
+      navigate('/vlogger-dashboard');
+    } else {
+      navigate('/dashboard');
+    }
+  } catch (err) {
       const message = err.response?.data?.message || 'Login failed';
       setError(message);
       toast.error('Unable to sign in', message);

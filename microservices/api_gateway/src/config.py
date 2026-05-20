@@ -34,6 +34,7 @@ class Config:
     order_service_url: str = os.getenv("ORDER_SERVICE_URL", "http://127.0.0.1:5005")
     payment_service_url: str = os.getenv("PAYMENT_SERVICE_URL", "http://127.0.0.1:5006")
     legacy_backend_url: str = os.getenv("LEGACY_BACKEND_URL", "http://127.0.0.1:5002")
+    vlogger_service_url: str = os.getenv("VLOGGER_SERVICE_URL", "http://127.0.0.1:5008")
     rate_limit_window_seconds: int = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
     rate_limit_max_requests: int = int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "120"))
     upstream_timeout_seconds: int = int(os.getenv("UPSTREAM_TIMEOUT_SECONDS", "15"))

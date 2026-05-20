@@ -91,6 +91,7 @@ def aggregated_health():
         "booking_service": "unknown",
         "order_service": "unknown",
         "payment_service": "unknown",
+        "vlogger_service": "unknown",
         "legacy_backend": "unknown",
     }
     for service_name, base_url, health_key in [
@@ -99,6 +100,7 @@ def aggregated_health():
         ("booking_service", config.booking_service_url, "booking_service"),
         ("order_service", config.order_service_url, "order_service"),
         ("payment_service", config.payment_service_url, "payment_service"),
+        ("vlogger_service", config.vlogger_service_url, "vlogger_service"),
     ]:
         try:
             response = requests.get(f"{base_url}/health", timeout=2)
@@ -495,8 +497,48 @@ def all_recipes_alias():
 def public_recipe_alias(recipe_id):
     return _proxy_service(config.chef_service_url, f"/api/v1/recipes/{recipe_id}", require_auth=False)
 
+# ==========================================
+# VLOGGER / SOCIAL FOOD PLATFORM ROUTES
+# ==========================================
 
+@gateway_blueprint.route("/api/posts", methods=["GET", "POST", "OPTIONS"])
+def vlogger_posts_alias():
+    # If it's a POST request to create a post, require authentication. GET can be public.
+    require_auth = request.method == "POST"
+    return _proxy_service(config.vlogger_service_url, "/api/posts", require_auth=require_auth)
+
+
+@gateway_blueprint.route("/api/posts/<string:post_id>/like", methods=["POST", "OPTIONS"])
+def vlogger_like_alias(post_id):
+    return _proxy_service(config.vlogger_service_url, f"/api/posts/{post_id}/like", require_auth=True)
+
+
+@gateway_blueprint.route("/api/posts/<string:post_id>/comments", methods=["GET", "POST", "OPTIONS"])
+def vlogger_comments_alias(post_id):
+    require_auth = request.method == "POST"
+    return _proxy_service(config.vlogger_service_url, f"/api/posts/{post_id}/comments", require_auth=require_auth)
+
+
+@gateway_blueprint.route("/api/top/dishes", methods=["GET", "OPTIONS"])
+def vlogger_top_dishes_alias():
+    return _proxy_service(config.vlogger_service_url, "/api/top/dishes", require_auth=False)
+
+
+@gateway_blueprint.route("/api/top/restaurants", methods=["GET", "OPTIONS"])
+def vlogger_top_restaurants_alias():
+    return _proxy_service(config.vlogger_service_url, "/api/top/restaurants", require_auth=False)
+
+
+@gateway_blueprint.route("/api/vlogger/media/<path:filename>", methods=["GET", "OPTIONS"])
+def vlogger_media_alias(filename):
+    return _proxy_service(config.vlogger_service_url, f"/api/vlogger/media/{filename}", require_auth=False)
+
+# Add this line in api_gateway/src/routes.py so it forwards DELETE actions to port 5008
+@gateway_blueprint.route("/api/posts/<path:path>", methods=["DELETE", "OPTIONS"])
+def vlogger_posts_delete_proxy(path):
+    return _proxy_service(config.vlogger_service_url, f"/api/posts/{path}", require_auth=True)
 @gateway_blueprint.route("/api/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+
 def legacy_proxy(path):
     if not config.legacy_backend_url:
         return error_response("No matching service route was found", 404, "route_not_found")
